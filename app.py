@@ -16,10 +16,9 @@ mysql = MySQL(app)
 @app.route('/')
 @app.route('/login')
 def login():
-	# cur = mysql.connection.cursor()
-	# cur.execute('''SELECT * FROM all_books WHERE page_count > 300''')
-	# results = cur.fetchall()
-	# print(results)
+	if 'loggedin' in session:
+		return redirect(url_for('home', name = session['name'], user_id = session['id']))
+
 	return render_template('login.html', msg = 'hola')
 
 @app.route('/checkuser', methods = ['POST'])
@@ -38,18 +37,13 @@ def check_user():
 		session['name'] = user['name']
 		session['email'] = user['email_id']
 		# Redirect to home page
-		return redirect(url_for('home', name = user['name'], user_id = id))
+		return redirect(url_for('home', name = user['name'], user_id = user['user_id']))
 	# print(id)
 	else:
 		redirect(url_for('login', msg = 'Login failed'))
 
 	# if len(user) == 1:
 		# return redirect(url_for('home', name = user['name'], user_id = id))
-	
-
-@app.route('/home/<name>/<user_id>')
-def home(name, user_id):
-	return render_template('home.html', name = name, user_id = user_id)
 
 @app.route('/createaccount')
 def create_account():
@@ -72,6 +66,35 @@ def sign_up():
 
 	return 'Inserted!'
 
+@app.route('/home/<name>/<user_id>')
+def home(name, user_id):
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
+
+	return render_template('home.html', name = name, user_id = user_id)
+
+@app.route('/mybooks/<user_id>')
+def my_books(user_id):
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
+		
+	cur = mysql.connection.cursor()
+	# cur.execute(f"SELECT * FROM user WHERE user_id = '{user_id}'")
+	cmd = f"SELECT * FROM all_books WHERE user_id = {user_id}"
+	cur.execute(cmd)
+	books = cur.fetchall()
+	print(books)
+
+	for i in range(len(books)):
+		print(books[i])
+		cmd = f"SELECT * FROM unique_books WHERE unique_id = {books[i]['unique_id']}"
+		cur.execute(cmd)
+		unique_book = cur.fetchone()
+		books[i]['name'] = unique_book['name']
+		books[i]['author'] = unique_book['author']
+
+	return render_template('my_books.html', books = books)
+
 @app.route('/logout')
 def logout():
 	session.pop('loggedin', None)
@@ -83,4 +106,3 @@ def logout():
 
 if __name__ == '__main__':
 	app.run(debug = True, port = 5001)
-

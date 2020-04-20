@@ -4,10 +4,14 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
-	<h1>Welcome, {{ name }} {{ user_id }} !</h1>
+	<h1>My Books</h1>
 </head>
 <body>
-	<a href="/mybooks/{{user_id}}">My Books</a><br>
-	<a href="/logout">Logout</a>
+{% for book in books %}
+	<p><b>{{ book['name'] }}</b></p>
+	<p>{{ book['author'] }}</p>
+	<p>{{ book['description'] }}</p>
+	<br>
+{% endfor %}
 </body>
 </html>
