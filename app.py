@@ -83,7 +83,6 @@ def add_book():
 		bookname = request.form['name']
 		author = request.form['author']
 		description = request.form['description']
-		# print(request.form)
 		transaction_type = request.form['transaction_type']
 
 		print(bookname)
@@ -107,15 +106,14 @@ def add_book():
 		
 		return redirect(url_for('add_book2', transaction_type = transaction_type))
 
-	return render_template('add_book.html')
+	return render_template('add-book.html')
 
 # @app.route('/addbook2')
 @app.route('/addbook2/<transaction_type>', methods = ['GET', 'POST'])
 def add_book2(transaction_type):
 	if request.method == 'POST':
-		print(request.form, "<---")
 		if request.form['book'] == 'none':
-			print(session['book_to_add']['author'])
+			print("HERE!!!", session['book_to_add'])
 
 			# insert into unique_books
 
@@ -133,12 +131,43 @@ def add_book2(transaction_type):
 			cur = mysql.connection.cursor()
 			cur.execute("SELECT MAX(book_id) FROM all_books")
 			maxid = cur.fetchone()
-			cmd = f"INSERT INTO all_books VALUES ({maxid['MAX(book_id)'] + 1}, '{session['book_to_add']['description']}', {session['book_to_add']['pagecount']}, {transaction_type}, {max_uid}, {session['id']})"
+			max_bid = maxid['MAX(book_id)'] + 1
+			cmd = f"INSERT INTO all_books VALUES ({max_bid}, '{session['book_to_add']['description']}', {session['book_to_add']['pagecount']}, {transaction_type}, {max_uid}, {session['id']})"
 			cur.execute(cmd)
 			mysql.connection.commit()
 
-			return "Added successfully"
-		
+			# add to corresponding transaction_type table
+
+			# cur = mysql.connection.cursor()
+
+			if transaction_type == '1':
+				# cur.execute("SELECT MAX(book_id) FROM available_for_exchange")
+				# maxid = cur.fetchone()
+				cmd = f"INSERT INTO available_for_exchange VALUES ({max_bid}, '{session['book_to_add']['exchange-description']}')"
+				cur.execute(cmd)
+				mysql.connection.commit()
+
+			elif transaction_type == '2':
+				# cur.execute("SELECT MAX(book_id) FROM available_for_borrowing")
+				# maxid = cur.fetchone()
+				cmd = f"INSERT INTO available_for_borrowing VALUES ({max_bid}, {session['book_to_add']['price']}, {session['book_to_add']['num-of-days']})"
+				print(cmd)
+				cur.execute(cmd)
+				mysql.connection.commit()
+
+			elif transaction_type == '3':
+				# cur.execute("SELECT MAX(book_id) FROM available_for_buying")
+				# maxid = cur.fetchone()
+				cmd = f"INSERT INTO available_for_buying VALUES ({max_bid}, {session['book_to_add']['price']})"
+				cur.execute(cmd)
+				mysql.connection.commit()
+				
+			# clear book details from session
+
+			session.pop('book_to_add', None)
+
+			return "Book added succesfully! Redirecting to home page...!"
+				
 		return "Not added"
 
 	print(transaction_type)
@@ -148,7 +177,7 @@ def add_book2(transaction_type):
 	print(similar_books)
 	print(type(similar_books))
 	
-	return render_template('add_book2.html', transaction_type = transaction_type, similar_books = similar_books)
+	return render_template('add-book2.html', transaction_type = transaction_type, similar_books = similar_books)
 
 @app.route('/mybooks/<user_id>')
 def my_books(user_id):

@@ -29,18 +29,28 @@
 			<label><b>What do you want to do with the book?</b></label>
 			<br>
 			<br>
-			<input type="radio" name="transaction_type" value="1">
+			<input type="radio" name="transaction_type" value="1" id="exchange">
 			<label for="1">Exchange</label>
 			<br>
-			<input type="radio" name="transaction_type" value="2">
+			<input type="radio" name="transaction_type" value="2" id="lend">
 			<label for="2">Lend</label>
 			<br>
-			<input type="radio" name="transaction_type" value="3">
+			<input type="radio" name="transaction_type" value="3" id="sell">
 			<label for="3">Sell</label><br>
 			<br>
+			<br>
+			<div class="price">
+
+			</div>
+			<div class="num-of-days">
+
+			</div>
+			<div class="exchange-description">
+			</div>
 			<br>
 			<button type="submit">Proceed</button>
 		  </div>
 	</form>
+	<script src="../static/add-book.js"></script>
 </body>
 </html>
