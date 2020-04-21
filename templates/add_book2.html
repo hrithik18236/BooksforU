@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<h1>Add Book2</h1>
+</head>
+<body>
+	<h3>Please select your book if it is from the following</h3>
+	<br>
+	{% if transaction_type == 'lend' %}
+		<p>lend</p>
+	{% elif transaction_type == 'sell' %}
+		<p>sell</p>
+	{% elif transaction_type == 'exchange' %}
+		<p>exchange</p>
+	{% endif %}
+
+	<form action="{{ url_for('add_book2', transaction_type = transaction_type) }}" method="POST">
+		{% for book in similar_books %}
+			<input type="radio" name="book" id="{{ book['uinque_id'] }}"required>
+			<label for="{{ book['uinque_id'] }}">{{ book['name'] }}</label>
+			<br>
+		{% endfor %}
+
+		<input type="radio" name="book" id="none" value="none" required>
+		<label for="none">None of the above</label>
+		<br>
+		<br>
+		<button type="submit">Proceed</button>
+	</form>
+
+</body>
+</html>

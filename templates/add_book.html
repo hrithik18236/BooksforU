@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<h1>Add a book</h1>
+	<h3>{{msg}}</h3>
+</head>
+<body>
+	<form action="/addbook" method="POST">
+		<div class="container">
+			<label for="name"><b>Book Name</b></label>
+			<input type="text" placeholder="Enter book name" name="name" required>
+			<br>
+			<br>
+			<label for="author"><b>Author</b></label>
+			<input type="text" placeholder="Enter author name" name="author" required>
+			<br> 
+			<br>
+			<label for="description"><b>Description</b></label>
+			<input type="text" placeholder="Enter a description" name="description" required>
+			<br> 
+			<br>
+			<label for="pagecount"><b>No. of pages</b></label>
+			<input type="text" placeholder="Enter no. of pages" name="pagecount" required>
+			<br> 
+			<br>
+			<label><b>What do you want to do with the book?</b></label>
+			<br>
+			<br>
+			<input type="radio" name="transaction_type" value="1">
+			<label for="1">Exchange</label>
+			<br>
+			<input type="radio" name="transaction_type" value="2">
+			<label for="2">Lend</label>
+			<br>
+			<input type="radio" name="transaction_type" value="3">
+			<label for="3">Sell</label><br>
+			<br>
+			<br>
+			<button type="submit">Proceed</button>
+		  </div>
+	</form>
+</body>
+</html>

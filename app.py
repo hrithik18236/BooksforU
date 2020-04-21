@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, session
 from flask_mysqldb import MySQL
+from difflib import SequenceMatcher
 
 app = Flask(__name__)
 
@@ -40,7 +41,7 @@ def check_user():
 		return redirect(url_for('home', name = user['name'], user_id = user['user_id']))
 	# print(id)
 	else:
-		redirect(url_for('login', msg = 'Login failed'))
+		return redirect(url_for('login', msg = 'Login failed'))
 
 	# if len(user) == 1:
 		# return redirect(url_for('home', name = user['name'], user_id = id))
@@ -73,11 +74,87 @@ def home(name, user_id):
 
 	return render_template('home.html', name = name, user_id = user_id)
 
+@app.route('/addbook', methods = ['GET', 'POST'])
+def add_book():
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
+
+	if request.method == 'POST':
+		bookname = request.form['name']
+		author = request.form['author']
+		description = request.form['description']
+		# print(request.form)
+		transaction_type = request.form['transaction_type']
+
+		print(bookname)
+		print(author)
+
+		session['book_to_add'] = request.form
+		print(request.form)
+
+		cur = mysql.connection.cursor()
+		cmd = f"SELECT * FROM unique_books"
+		cur.execute(cmd)
+		unique_books = cur.fetchall()
+		
+		similar_books = []
+
+		for book in unique_books:
+			if SequenceMatcher(None, bookname.lower(), book['name'].lower()).ratio() >= 0.8 and SequenceMatcher(None, author.lower(), book['author'].lower()).ratio() >= 0.8:
+				similar_books.append(book)
+
+		session['similar_books'] = similar_books
+		
+		return redirect(url_for('add_book2', transaction_type = transaction_type))
+
+	return render_template('add_book.html')
+
+# @app.route('/addbook2')
+@app.route('/addbook2/<transaction_type>', methods = ['GET', 'POST'])
+def add_book2(transaction_type):
+	if request.method == 'POST':
+		print(request.form, "<---")
+		if request.form['book'] == 'none':
+			print(session['book_to_add']['author'])
+
+			# insert into unique_books
+
+			cur = mysql.connection.cursor()
+			cur.execute("SELECT MAX(unique_id) FROM unique_books")
+			maxid = cur.fetchone()
+			max_uid = maxid['MAX(unique_id)'] + 1
+			cmd = f"INSERT INTO unique_books VALUES ({max_uid}, '{session['book_to_add']['name']}', '{session['book_to_add']['author']}', 1, 0, 0, 1)"
+			print(cmd)
+			cur.execute(cmd)
+			mysql.connection.commit()
+
+			# insert into all_books
+
+			cur = mysql.connection.cursor()
+			cur.execute("SELECT MAX(book_id) FROM all_books")
+			maxid = cur.fetchone()
+			cmd = f"INSERT INTO all_books VALUES ({maxid['MAX(book_id)'] + 1}, '{session['book_to_add']['description']}', {session['book_to_add']['pagecount']}, {transaction_type}, {max_uid}, {session['id']})"
+			cur.execute(cmd)
+			mysql.connection.commit()
+
+			return "Added successfully"
+		
+		return "Not added"
+
+	print(transaction_type)
+
+	similar_books = session['similar_books']
+
+	print(similar_books)
+	print(type(similar_books))
+	
+	return render_template('add_book2.html', transaction_type = transaction_type, similar_books = similar_books)
+
 @app.route('/mybooks/<user_id>')
 def my_books(user_id):
 	if 'loggedin' not in session:
 		return redirect(url_for('login'))
-		
+
 	cur = mysql.connection.cursor()
 	# cur.execute(f"SELECT * FROM user WHERE user_id = '{user_id}'")
 	cmd = f"SELECT * FROM all_books WHERE user_id = {user_id}"
