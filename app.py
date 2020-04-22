@@ -124,7 +124,6 @@ def add_book2(transaction_type):
 			cmd = f"INSERT INTO unique_books VALUES ({max_uid}, '{session['book_to_add']['name']}', '{session['book_to_add']['author']}', 1, 0, 0, 1)"
 			print(cmd)
 			cur.execute(cmd)
-			mysql.connection.commit()
 
 			# insert into all_books
 
@@ -134,7 +133,6 @@ def add_book2(transaction_type):
 			max_bid = maxid['MAX(book_id)'] + 1
 			cmd = f"INSERT INTO all_books VALUES ({max_bid}, '{session['book_to_add']['description']}', {session['book_to_add']['pagecount']}, {transaction_type}, {max_uid}, {session['id']})"
 			cur.execute(cmd)
-			mysql.connection.commit()
 
 			# add to corresponding transaction_type table
 
@@ -145,7 +143,6 @@ def add_book2(transaction_type):
 				# maxid = cur.fetchone()
 				cmd = f"INSERT INTO available_for_exchange VALUES ({max_bid}, '{session['book_to_add']['exchange-description']}')"
 				cur.execute(cmd)
-				mysql.connection.commit()
 
 			elif transaction_type == '2':
 				# cur.execute("SELECT MAX(book_id) FROM available_for_borrowing")
@@ -153,14 +150,16 @@ def add_book2(transaction_type):
 				cmd = f"INSERT INTO available_for_borrowing VALUES ({max_bid}, {session['book_to_add']['price']}, {session['book_to_add']['num-of-days']})"
 				print(cmd)
 				cur.execute(cmd)
-				mysql.connection.commit()
 
 			elif transaction_type == '3':
 				# cur.execute("SELECT MAX(book_id) FROM available_for_buying")
 				# maxid = cur.fetchone()
 				cmd = f"INSERT INTO available_for_buying VALUES ({max_bid}, {session['book_to_add']['price']})"
 				cur.execute(cmd)
-				mysql.connection.commit()
+
+			# commit the changes
+
+			mysql.connection.commit()
 				
 			# clear book details from session
 
@@ -199,7 +198,57 @@ def my_books(user_id):
 		books[i]['name'] = unique_book['name']
 		books[i]['author'] = unique_book['author']
 
-	return render_template('my_books.html', books = books)
+	return render_template('my-books.html', books = books)
+
+@app.route('/mybooks/editbook/<book_id>', methods = ['POST'])
+def edit_book(book_id):
+	return "Editing" + str(book_id)
+
+@app.route('/mybooks/deletebook/<book_id>', methods = ['POST'])
+def delete_book(book_id):
+	cur = mysql.connection.cursor()
+
+	# get unique_id from all_books
+
+	cmd = f"SELECT unique_id FROM all_books WHERE book_id = {book_id }"
+	print(cmd)
+	cur.execute(cmd)
+	unique_id = cur.fetchone()
+	print(unique_id)
+	unique_id = unique_id['unique_id']
+	print(unique_id)
+
+	# delete from corresponding transaction type table
+
+	cmd = f"DELETE FROM available_for_exchange WHERE book_id = { book_id }"
+	print(cmd)
+	cur.execute(cmd)
+
+	cmd = f"DELETE FROM available_for_borrowing WHERE book_id = { book_id }"
+	print(cmd)
+	cur.execute(cmd)
+
+	cmd = f"DELETE FROM available_for_buying WHERE book_id = { book_id }"
+	print(cmd)
+	cur.execute(cmd)
+
+	# delete from all_books
+
+	cmd = f"DELETE FROM all_books WHERE book_id = { book_id }"
+	print(cmd)
+	cur.execute(cmd)
+	# mysql.connection.commit()
+
+	# decrease book_count from unique_books
+
+	cmd = f"UPDATE unique_books SET book_count = book_count - 1 WHERE unique_id = { unique_id }"
+	print(cmd)
+	cur.execute(cmd)
+
+	mysql.connection.commit()
+
+	return redirect(url_for('my_books', user_id = session['id']))
+
 
 @app.route('/logout')
 def logout():
