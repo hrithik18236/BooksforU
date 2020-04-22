@@ -19,7 +19,7 @@
 
 	<form action="{{ url_for('add_book2', transaction_type = transaction_type) }}" method="POST">
 		{% for book in similar_books %}
-			<input type="radio" name="book" id="{{ book['uinque_id'] }}"required>
+			<input type="radio" name="book" value="{{ book['unique_id'] }}"required>
 			<label for="{{ book['uinque_id'] }}">{{ book['name'] }}</label>
 			<br>
 		{% endfor %}

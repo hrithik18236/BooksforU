@@ -5,21 +5,33 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
 	<h1>My Books</h1>
+	<h3>Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</h3>
 </head>
 <body>
 {% for book in books %}
-	<p><b>{{ book['name'] }}</b></p>
-	<p>{{ book['author'] }}</p>
-	<p>{{ book['description'] }}</p>
+	<p class="bookname  {{ book['book_id'] }}"><b>Name:</b> {{ book['name'] }}</p>
+	<p class = "author {{ book['book_id'] }}"><b>Author:</b> {{ book['author'] }}</p>
+	<p class = "description {{ book['book_id'] }}"><b>Description:</b> {{ book['description'] }}</p>
+	
+	{% if 'price' in book %}
+		<p class="price  {{ book['book_id'] }}"><b>Price:</b> {{ book['price'] }}</p>
+	{% endif %}
 
-	<form style="display: inline;" action="{{ url_for('edit_book', book_id = book['book_id']) }}", method="POST">
-		<button class="editbtn" id="edit-{{ book['book_id'] }}">Edit</button>
+	{% if 'num_of_days' in book %}
+		<p class="num_of_days  {{ book['book_id'] }}"><b>No. of days (for lending): </b>{{ book['num_of_days'] }}</p>
+	{% endif %}
+
+	{% if 'exchange_with' in book %}
+		<p class="exchange_with  {{ book['book_id'] }}"><b>Exchange description:</b> {{ book['exchange_with'] }}</p>
+	{% endif %}
+
+	<form style="display: inline;" action="{{ url_for('edit_book', book_id = book['book_id']) }}", method="GET">
+		<button class="editbtn {{ book['book_id'] }}">Edit</button>
 	</form>
 
 	<form style="display: inline;" action="{{ url_for('delete_book', book_id = book['book_id']) }}", method="POST">
-		<button class="delbtn" id="delete-{{ book['book_id'] }}">Delete</button>
+		<button class="delbtn {{ book['book_id'] }}">Delete</button>
 	</form>
-
 	<br>
 	<br>
 {% endfor %}

@@ -1,7 +1,11 @@
-let btns = document.querySelectorAll(".delbtn");
+let delbtns = document.querySelectorAll(".delbtn");
 
-btns.forEach(function (currBtn){
+delbtns.forEach(function (currBtn){
 	currBtn.addEventListener("click", function () {
 		alert("Deletion succesful!");
 	});
 })
+
+let editBtns = document.querySelectorAll(".editbtn, .24");
+
+console.log(editBtns);

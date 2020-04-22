@@ -4,13 +4,8 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
-	<h1>Welcome, {{ name }} {{ user_id }} !</h1>
 </head>
 <body>
-	<a href="/addbook">Add Book</a>
-	<br>
-	<a href="/mybooks">My Books</a>
-	<br>
-	<a href="/logout">Logout</a>
+	<p>{{ msg }} Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</p>
 </body>
 </html>

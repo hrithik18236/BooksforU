@@ -72,6 +72,9 @@ def home(name, user_id):
 	if 'loggedin' not in session:
 		return redirect(url_for('login'))
 
+	if 'mybooks' in session:
+		session.pop('mybooks', None)
+
 	return render_template('home.html', name = name, user_id = user_id)
 
 @app.route('/addbook', methods = ['GET', 'POST'])
@@ -112,97 +115,169 @@ def add_book():
 @app.route('/addbook2/<transaction_type>', methods = ['GET', 'POST'])
 def add_book2(transaction_type):
 	if request.method == 'POST':
+		print(request.form)
+		cur = mysql.connection.cursor()
+
 		if request.form['book'] == 'none':
 			print("HERE!!!", session['book_to_add'])
 
 			# insert into unique_books
 
-			cur = mysql.connection.cursor()
 			cur.execute("SELECT MAX(unique_id) FROM unique_books")
 			maxid = cur.fetchone()
-			max_uid = maxid['MAX(unique_id)'] + 1
-			cmd = f"INSERT INTO unique_books VALUES ({max_uid}, '{session['book_to_add']['name']}', '{session['book_to_add']['author']}', 1, 0, 0, 1)"
+			uid = maxid['MAX(unique_id)'] + 1
+			cmd = f"INSERT INTO unique_books VALUES ({uid}, '{session['book_to_add']['name']}', '{session['book_to_add']['author']}', 1, 0, 0, 1)"
 			print(cmd)
 			cur.execute(cmd)
 
-			# insert into all_books
+		else:
+			# update book_count in unique_books	
 
-			cur = mysql.connection.cursor()
-			cur.execute("SELECT MAX(book_id) FROM all_books")
-			maxid = cur.fetchone()
-			max_bid = maxid['MAX(book_id)'] + 1
-			cmd = f"INSERT INTO all_books VALUES ({max_bid}, '{session['book_to_add']['description']}', {session['book_to_add']['pagecount']}, {transaction_type}, {max_uid}, {session['id']})"
+			cmd = f"SELECT * FROM unique_books WHERE unique_id = {request.form['book']}"
+			print(cmd)
+			cur.execute(cmd)
+			unique_book = cur.fetchone()
+			uid = unique_book['unique_id']
+			cmd = f"UPDATE unique_books SET book_count = book_count + 1 WHERE unique_id = {uid}"
+			print(cmd)
 			cur.execute(cmd)
 
-			# add to corresponding transaction_type table
+		# insert into all_books
 
-			# cur = mysql.connection.cursor()
+		# cur = mysql.connection.cursor()
+		cur.execute("SELECT MAX(book_id) FROM all_books")
+		maxid = cur.fetchone()
+		max_bid = maxid['MAX(book_id)'] + 1
+		cmd = f"INSERT INTO all_books VALUES ({max_bid}, '{session['book_to_add']['description']}', {session['book_to_add']['pagecount']}, {transaction_type}, {uid}, {session['id']})"
+		print(cmd)
+		cur.execute(cmd)
 
-			if transaction_type == '1':
-				# cur.execute("SELECT MAX(book_id) FROM available_for_exchange")
-				# maxid = cur.fetchone()
-				cmd = f"INSERT INTO available_for_exchange VALUES ({max_bid}, '{session['book_to_add']['exchange-description']}')"
-				cur.execute(cmd)
+		# add to corresponding transaction_type table
 
-			elif transaction_type == '2':
-				# cur.execute("SELECT MAX(book_id) FROM available_for_borrowing")
-				# maxid = cur.fetchone()
-				cmd = f"INSERT INTO available_for_borrowing VALUES ({max_bid}, {session['book_to_add']['price']}, {session['book_to_add']['num-of-days']})"
-				print(cmd)
-				cur.execute(cmd)
+		if transaction_type == '1':
+			# cur.execute("SELECT MAX(book_id) FROM available_for_exchange")
+			# maxid = cur.fetchone()
+			cmd = f"INSERT INTO available_for_exchange VALUES ({max_bid}, '{session['book_to_add']['exchange-description']}')"
+			print(cmd)
+			cur.execute(cmd)
 
-			elif transaction_type == '3':
-				# cur.execute("SELECT MAX(book_id) FROM available_for_buying")
-				# maxid = cur.fetchone()
-				cmd = f"INSERT INTO available_for_buying VALUES ({max_bid}, {session['book_to_add']['price']})"
-				cur.execute(cmd)
+		elif transaction_type == '2':
+			# cur.execute("SELECT MAX(book_id) FROM available_for_borrowing")
+			# maxid = cur.fetchone()
+			cmd = f"INSERT INTO available_for_borrowing VALUES ({max_bid}, {session['book_to_add']['price']}, {session['book_to_add']['num-of-days']})"
+			print(cmd)
+			cur.execute(cmd)
 
-			# commit the changes
-
-			mysql.connection.commit()
+		elif transaction_type == '3':
+			# cur.execute("SELECT MAX(book_id) FROM available_for_buying")
+			# maxid = cur.fetchone()
+			cmd = f"INSERT INTO available_for_buying VALUES ({max_bid}, {session['book_to_add']['price']})"
+			print(cmd)
+			cur.execute(cmd)
 				
 			# clear book details from session
 
-			session.pop('book_to_add', None)
+		session.pop('book_to_add', None)
 
-			return "Book added succesfully! Redirecting to home page...!"
-				
-		return "Not added"
+		mysql.connection.commit()
+
+		return redirect(url_for('success_page', msg = "Book added successfully!"))
 
 	print(transaction_type)
-
 	similar_books = session['similar_books']
-
 	print(similar_books)
 	print(type(similar_books))
 	
 	return render_template('add-book2.html', transaction_type = transaction_type, similar_books = similar_books)
 
-@app.route('/mybooks/<user_id>')
-def my_books(user_id):
+@app.route('/mybooks')
+def my_books():
 	if 'loggedin' not in session:
 		return redirect(url_for('login'))
 
 	cur = mysql.connection.cursor()
 	# cur.execute(f"SELECT * FROM user WHERE user_id = '{user_id}'")
-	cmd = f"SELECT * FROM all_books WHERE user_id = {user_id}"
+	cmd = f"SELECT * FROM all_books WHERE user_id = {session['id']}"
 	cur.execute(cmd)
 	books = cur.fetchall()
 	print(books)
 
-	for i in range(len(books)):
-		print(books[i])
-		cmd = f"SELECT * FROM unique_books WHERE unique_id = {books[i]['unique_id']}"
+	session['mybooks'] = {}
+
+	for book in books:
+		print(book)
+		cmd = f"SELECT * FROM unique_books WHERE unique_id = {book['unique_id']}"
 		cur.execute(cmd)
 		unique_book = cur.fetchone()
-		books[i]['name'] = unique_book['name']
-		books[i]['author'] = unique_book['author']
+		book['name'] = unique_book['name']
+		book['author'] = unique_book['author']
+
+		if book['transaction_type'] == 1:
+			print(book)
+			cmd = f"SELECT * FROM available_for_exchange WHERE book_id = {book['book_id']}"
+			cur.execute(cmd)
+			exchange_book = cur.fetchone()
+			print(exchange_book)
+			if exchange_book is not None:
+				book['exchange_with'] = exchange_book['exchange_with']
+
+
+		elif book['transaction_type'] == 2:
+			cmd = f"SELECT * FROM available_for_borrowing WHERE book_id = {book['book_id']}"
+			cur.execute(cmd)
+			lend_book = cur.fetchone()
+			if lend_book is not None:
+				book['price'] = lend_book['price']
+				book['num_of_days'] = lend_book['num_of_days']
+
+		elif book['transaction_type'] == 3:
+			cmd = f"SELECT * FROM available_for_buying WHERE book_id = {book['book_id']}"
+			cur.execute(cmd)
+			sell_book = cur.fetchone()
+			if sell_book is not None:
+				book['price'] = sell_book['price']
+
+		session['mybooks'][book['book_id']] = book
 
 	return render_template('my-books.html', books = books)
 
-@app.route('/mybooks/editbook/<book_id>', methods = ['POST'])
+@app.route('/mybooks/editbook/<book_id>', methods = ['GET','POST'])
 def edit_book(book_id):
-	return "Editing" + str(book_id)
+	if request.method == 'POST':
+		cur = mysql.connection.cursor()
+
+		print(request.form)
+
+		cmd = f"UPDATE all_books SET description = '{request.form['description']}', page_count = '{request.form['page_count']}' WHERE book_id = {book_id};"	
+		print(cmd)
+		cur.execute(cmd)
+
+		if request.form['transaction_type'] == '1':
+			cmd = f"UPDATE available_for_exchange SET exchange_with = '{request.form['exchange-description']}' WHERE book_id = {book_id};"
+			print(cmd)
+			cur.execute(cmd)
+		
+		elif request.form['transaction_type'] == '2':
+			cmd = f"UPDATE available_for_borrowing SET num_of_days = '{request.form['num_of_days']}', price = '{request.form['price']}' WHERE book_id = {book_id};"
+			print(cmd)
+			cur.execute(cmd)
+		
+		elif request.form['transaction_type'] == '3':
+			cmd = f"UPDATE available_for_buying SET price = '{request.form['price']}' WHERE book_id = {book_id};"
+			print(cmd)
+			cur.execute(cmd)
+
+		# commit the changes
+
+		mysql.connection.commit()
+
+		return redirect(url_for('success_page', msg = "Edited successfully!"))
+
+	book_to_edit = session['mybooks'][book_id]
+	session.pop('mybooks', None)
+	print("Book to edit", book_to_edit)
+
+	return render_template('edit-mybook.html', mybook = book_to_edit)
 
 @app.route('/mybooks/deletebook/<book_id>', methods = ['POST'])
 def delete_book(book_id):
@@ -210,12 +285,12 @@ def delete_book(book_id):
 
 	# get unique_id from all_books
 
-	cmd = f"SELECT unique_id FROM all_books WHERE book_id = {book_id }"
+	cmd = f"SELECT * FROM all_books WHERE book_id = {book_id }"
 	print(cmd)
 	cur.execute(cmd)
-	unique_id = cur.fetchone()
-	print(unique_id)
-	unique_id = unique_id['unique_id']
+	book = cur.fetchone()
+	print(book)
+	unique_id = book['unique_id']
 	print(unique_id)
 
 	# delete from corresponding transaction type table
@@ -236,8 +311,7 @@ def delete_book(book_id):
 
 	cmd = f"DELETE FROM all_books WHERE book_id = { book_id }"
 	print(cmd)
-	cur.execute(cmd)
-	# mysql.connection.commit()
+	cur.execute(cmd)	
 
 	# decrease book_count from unique_books
 
@@ -245,10 +319,29 @@ def delete_book(book_id):
 	print(cmd)
 	cur.execute(cmd)
 
+	# insert into archive
+
+	try:
+		cur.execute("SELECT MAX(transaction_id) FROM archive")
+		maxid = cur.fetchone()
+		max_tid = maxid['MAX(transaction_id)'] + 1
+
+	except:
+		max_tid = 1
+
+	cmd = f"INSERT INTO archive VALUES ({max_tid}, {book_id}, {session['id']}, {book['transaction_type']})"
+	print(cmd)
+	cur.execute(cmd)
+
+	# commit the changes
+
 	mysql.connection.commit()
 
-	return redirect(url_for('my_books', user_id = session['id']))
+	return redirect(url_for('success_page', msg = "Deletion successful!"))
 
+@app.route('/success/<msg>')
+def success_page(msg):
+	return render_template('success-page.html', msg = msg)
 
 @app.route('/logout')
 def logout():
