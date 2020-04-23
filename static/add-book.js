@@ -1,12 +1,22 @@
 console.log("Hello World")
 
+let formbtn = document.querySelector("button");
+let textfields = document.querySelectorAll(".textfield");
+
+console.log(textfields);
+
+formbtn.addEventListener("click", (e) => {
+	textfields.forEach((textfield) => {
+		textfield.value = textfield.value.replace("'", "''");
+	});
+});
+
+///////////////////////
+
 let exchangeRadio = document.getElementById("exchange")
 let lendRadio = document.getElementById("lend")
 let sellRadio = document.getElementById("sell")
 
-// document.querySelector(".price").style.display = "none";
-// document.querySelector(".num-of-days").style.display = "none";
-// document.querySelector(".exchange-description").style.display = "block";
 
 exchangeRadio.addEventListener("click", function() {
 	if (exchangeRadio.checked) {
@@ -26,9 +36,9 @@ lendRadio.addEventListener("click", function() {
 		console.log(lendRadio.value)
 	}
 	
-	document.querySelector(".price").innerHTML = '<label for="price"><b>Price</b></label> <input type="text" placeholder="Enter price" name="price" required> <br> <br>';
+	document.querySelector(".price").innerHTML = '<label for="price"><b>Price</b></label> <input type="number" placeholder="Enter price" name="price" required> <br> <br>';
 
-	document.querySelector(".num-of-days").innerHTML = '<label for="num-of-days"><b>No. of days</b></label> <input type="text" placeholder="Enter no. of days" name="num-of-days" required> <br>';
+	document.querySelector(".num-of-days").innerHTML = '<label for="num-of-days"><b>No. of days</b></label> <input type="number" placeholder="Enter no. of days" name="num-of-days" required> <br>';
 
 	document.querySelector(".exchange-description").innerHTML = "";
 
@@ -39,7 +49,7 @@ sell.addEventListener("click", function() {
 		console.log(sellRadio.value)
 	}
 
-	document.querySelector(".price").innerHTML = '<label for="price"><b>Price</b></label> <input type="text" placeholder="Enter price" name="price" required> <br> <br>';
+	document.querySelector(".price").innerHTML = '<label for="price"><b>Price</b></label> <input type="number" placeholder="Enter price" name="price" required> <br> <br>';
 
 	document.querySelector(".num-of-days").innerHTML = "";
 

@@ -77,19 +77,59 @@ def home(name, user_id):
 
 	return render_template('home.html', name = name, user_id = user_id)
 
+@app.route('/search', methods = ['GET'])
+def search():
+	name = request.args.get('name', "")
+	author = request.args.get('author', "")
+	description = request.args.get('description', "")
+
+	cur = mysql.connection.cursor()
+
+	search_results = []
+
+	if len(name) > 0:
+		name.lower()
+		cmd = f"SELECT * FROM unique_books WHERE lower(name) LIKE '%{name}%'"
+		print(cmd)
+		cur.execute(cmd)
+
+		for result in cur.fetchall():
+			search_results.append(result)
+
+	if len(author) > 0:
+		author.lower()
+		cmd = f"SELECT * FROM unique_books WHERE lower(author) LIKE '%{author}%'"
+		print(cmd)
+		cur.execute(cmd)
+
+		for result in cur.fetchall():
+			search_results.append(result)
+
+	if len(description) > 0:
+		print("Description: " + description)
+		description.lower()
+		cmd = f"SELECT * FROM all_books WHERE lower(description) LIKE '%{description}%'"
+		print(cmd)
+		cur.execute(cmd)
+
+		for result in cur.fetchall():
+			search_results.append(result)
+
+	return render_template('search.html', search_results = search_results)
+
 @app.route('/addbook', methods = ['GET', 'POST'])
 def add_book():
 	if 'loggedin' not in session:
 		return redirect(url_for('login'))
 
 	if request.method == 'POST':
+		
+		# replace single with double quotes to safely insert in database
+
 		bookname = request.form['name']
 		author = request.form['author']
 		description = request.form['description']
 		transaction_type = request.form['transaction_type']
-
-		print(bookname)
-		print(author)
 
 		session['book_to_add'] = request.form
 		print(request.form)
@@ -220,7 +260,6 @@ def my_books():
 			print(exchange_book)
 			if exchange_book is not None:
 				book['exchange_with'] = exchange_book['exchange_with']
-
 
 		elif book['transaction_type'] == 2:
 			cmd = f"SELECT * FROM available_for_borrowing WHERE book_id = {book['book_id']}"

@@ -22,7 +22,7 @@
 		<br> 
 		<br>
 		<label for="pagecount"><b>No. of pages</b></label>
-		<input type="text" placeholder="Edit no. of pages" name="page_count" value="{{ mybook['page_count'] }}" required>
+		<input type="number" placeholder="Edit no. of pages" name="page_count" value="{{ mybook['page_count'] }}" required>
 		<br>
 		<br>
 		{% if mybook['transaction_type'] == 1 %}
@@ -32,14 +32,15 @@
 
 		{% if mybook['transaction_type'] == 2 %}
 			<label for="num-of-days"><b>Edit price</b></label>
-			<input type="text" placeholder="Edit price" name="price" required value="{{ mybook['price'] }}"> <br>
+			<input type="number" placeholder="Edit price" name="price" required value="{{ mybook['price'] }}">
+			<br><br>
 			<label for="price"><b>Edit no. of days</b></label> 
-			<input type="text" placeholder="Enter no. of days" name="num_of_days" value="{{ mybook['num_of_days'] }}" required> <br>
+			<input type="number" placeholder="Enter no. of days" name="num_of_days" value="{{ mybook['num_of_days'] }}" required> <br>
 		{% endif %}
 
 		{% if mybook['transaction_type'] == 3 %}
 			<label for="num-of-days"><b>Edit price</b></label>
-			<input type="text" placeholder="Edit price" name="price" required value="{{ mybook['price'] }}"> <br>
+			<input type="number" placeholder="Edit price" name="price" required value="{{ mybook['price'] }}"> <br>
 		{% endif %}
 		<br>
 		<button type="submit">Save</button>
