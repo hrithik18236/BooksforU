@@ -23,12 +23,24 @@
 			<label for="{{ book['uinque_id'] }}">{{ book['name'] }}</label>
 			<br>
 		{% endfor %}
-
 		<input type="radio" name="book" id="none" value="none" required>
 		<label for="none">None of the above</label>
 		<br>
 		<br>
+		<div style="display: none;" class="genres">
+			<h4>Add upto 3 genres</h4>
+			<label for="">Genre 1</label>
+			<input type="text" name="genre1" id="">
+			<br>
+			<label for="">Genre 2</label>
+			<input type="text" name="genre2" id="">
+			<br>
+			<label for="">Genre 3</label>
+			<input type="text" name="genre3" id="">
+		</div>
+		<br>
 		<button type="submit">Proceed</button>
 	</form>
+	<script src="../static/add-book2.js"></script>
 </body>
 </html>

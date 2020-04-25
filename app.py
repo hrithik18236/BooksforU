@@ -81,39 +81,42 @@ def home(name, user_id):
 def search():
 	name = request.args.get('name', "")
 	author = request.args.get('author', "")
-	description = request.args.get('description', "")
+	# description = request.args.get('description', "")
+	genre = request.args.get('genre', "")
 
 	cur = mysql.connection.cursor()
 
 	search_results = []
 
-	if len(name) > 0:
+	if True:
 		name.lower()
-		cmd = f"SELECT * FROM unique_books WHERE lower(name) LIKE '%{name}%'"
-		print(cmd)
-		cur.execute(cmd)
-
-		for result in cur.fetchall():
-			search_results.append(result)
-
-	if len(author) > 0:
 		author.lower()
-		cmd = f"SELECT * FROM unique_books WHERE lower(author) LIKE '%{author}%'"
+		genre.lower()
+		cmd = f"SELECT * FROM unique_books as u, book_genre_relation as b WHERE u.unique_id = b.unique_id AND lower(name) LIKE '%{name}%' AND lower(author) LIKE '%{author}%' AND lower(genre_name) LIKE '%{genre}%'"
 		print(cmd)
 		cur.execute(cmd)
 
 		for result in cur.fetchall():
 			search_results.append(result)
 
-	if len(description) > 0:
-		print("Description: " + description)
-		description.lower()
-		cmd = f"SELECT * FROM all_books WHERE lower(description) LIKE '%{description}%'"
-		print(cmd)
-		cur.execute(cmd)
+	# if len(author) > 0:
+	# 	author.lower()
+	# 	cmd = f"SELECT * FROM unique_books WHERE lower(author) LIKE '%{author}%'"
+	# 	print(cmd)
+	# 	cur.execute(cmd)
 
-		for result in cur.fetchall():
-			search_results.append(result)
+	# 	for result in cur.fetchall():
+	# 		search_results.append(result)
+
+	# if len(description) > 0:
+	# 	print("Description: " + description)
+	# 	description.lower()
+	# 	cmd = f"SELECT * FROM all_books WHERE lower(description) LIKE '%{description}%'"
+	# 	print(cmd)
+	# 	cur.execute(cmd)
+
+	# 	for result in cur.fetchall():
+	# 		search_results.append(result)
 
 	return render_template('search.html', search_results = search_results)
 
@@ -154,9 +157,10 @@ def add_book():
 # @app.route('/addbook2')
 @app.route('/addbook2/<transaction_type>', methods = ['GET', 'POST'])
 def add_book2(transaction_type):
+	cur = mysql.connection.cursor()
+
 	if request.method == 'POST':
 		print(request.form)
-		cur = mysql.connection.cursor()
 
 		if request.form['book'] == 'none':
 			print("HERE!!!", session['book_to_add'])
@@ -217,7 +221,36 @@ def add_book2(transaction_type):
 				
 			# clear book details from session
 
-		session.pop('book_to_add', None)
+		if len(request.form["genre1"]) > 0:
+			cmd = f"SELECT * FROM genre WHERE lower(genre_name) = '{request.form['genre1'].lower()}'"
+			cur.execute(cmd)
+
+			if len(cur.fetchall()) == 0:					
+				cmd = f"INSERT INTO genre VALUES ('{request.form['genre1'].lower()}')"
+				print(cmd)
+				cur.execute(cmd)
+
+			cmd = f"INSERT INTO book_genre_relation VALUES ({uid}, '{request.form['genre1'].lower()}')"
+			print(cmd)
+			cur.execute(cmd)
+			
+		if len(request.form["genre2"]) > 0:
+			cmd = f"SELECT * FROM genre WHERE lower(genre_name) = '{request.form['genre2'].lower()}'"
+			cur.execute(cmd)
+			
+			if len(cur.fetchall()) == 0:								
+				cmd = f"INSERT INTO genre VALUES ('{request.form['genre2'].lower()}')"
+				print(cmd)
+				cur.execute(cmd)
+
+		if len(request.form["genre3"]) > 0:
+			cmd = f"SELECT * FROM genre WHERE lower(genre_name) = '{request.form['genre3'].lower()}'"
+			cur.execute(cmd)
+			
+			if len(cur.fetchall()) == 0:								
+				cmd = f"INSERT INTO genre VALUES ('{request.form['genre3'].lower()}')"
+				print(cmd)
+				cur.execute(cmd)
 
 		mysql.connection.commit()
 
@@ -227,8 +260,13 @@ def add_book2(transaction_type):
 	similar_books = session['similar_books']
 	print(similar_books)
 	print(type(similar_books))
+
+	cmd = f"SELECT * FROM genre;"
+	cur.execute(cmd)
+	genres = cur.fetchall()
+	print(genres)
 	
-	return render_template('add-book2.html', transaction_type = transaction_type, similar_books = similar_books)
+	return render_template('add-book2.html', transaction_type = transaction_type, similar_books = similar_books, genres = genres)
 
 @app.route('/mybooks')
 def my_books():

@@ -45,6 +45,9 @@ lendRadio.addEventListener("click", function() {
 });
 
 sell.addEventListener("click", function() {
+	console.log("clicked on sell");
+	
+
 	if (sellRadio.checked) {
 		console.log(sellRadio.value)
 	}
