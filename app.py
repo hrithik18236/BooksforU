@@ -92,7 +92,12 @@ def search():
 		name.lower()
 		author.lower()
 		genre.lower()
-		cmd = f"SELECT * FROM unique_books as u, book_genre_relation as b WHERE u.unique_id = b.unique_id AND lower(name) LIKE '%{name}%' AND lower(author) LIKE '%{author}%' AND lower(genre_name) LIKE '%{genre}%'"
+
+		if len(genre) == 0:
+			cmd = f"SELECT * FROM unique_books WHERE lower(name) LIKE '%{name}%' AND lower(author) LIKE '%{author}%'"
+		else:
+			cmd = f"SELECT * FROM unique_books as u, book_genre_relation as b WHERE u.unique_id = b.unique_id AND lower(name) LIKE '%{name}%' AND lower(author) LIKE '%{author}%' AND lower(genre_name) LIKE '%{genre}%'"
+		
 		print(cmd)
 		cur.execute(cmd)
 
@@ -260,13 +265,8 @@ def add_book2(transaction_type):
 	similar_books = session['similar_books']
 	print(similar_books)
 	print(type(similar_books))
-
-	cmd = f"SELECT * FROM genre;"
-	cur.execute(cmd)
-	genres = cur.fetchall()
-	print(genres)
 	
-	return render_template('add-book2.html', transaction_type = transaction_type, similar_books = similar_books, genres = genres)
+	return render_template('add-book2.html', transaction_type = transaction_type, similar_books = similar_books)
 
 @app.route('/mybooks')
 def my_books():
