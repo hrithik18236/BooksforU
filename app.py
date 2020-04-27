@@ -8,8 +8,8 @@ app.secret_key = '9afd69d3d6ff1bdd87f0deb0'
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'dbmsproject'
-app.config['MYSQL_DB'] = 'database1'
+app.config['MYSQL_PASSWORD'] = '1234'
+app.config['MYSQL_DB'] = 'dbms'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
 mysql = MySQL(app)
@@ -26,20 +26,21 @@ def login():
 def check_user():
 	email = str(request.form['email'])
 	password = str(request.form['psw'])
-
 	cur = mysql.connection.cursor()
 	cur.execute(f"SELECT * FROM user WHERE email_id = '{email}'")
 	user = cur.fetchone()
-	print(user)
-
 	if user:
-		session['loggedin'] = True
-		session['id'] = user['user_id']
-		session['name'] = user['name']
-		session['email'] = user['email_id']
-		# Redirect to home page
-		return redirect(url_for('home', name = user['name'], user_id = user['user_id']))
-	# print(id)
+		if (user['password']==password):
+			session['loggedin'] = True
+			session['id'] = user['user_id']
+			session['name'] = user['name']
+			session['email'] = user['email_id']
+			# Redirect to home page
+			return redirect(url_for('home', name = user['name'], user_id = user['user_id']))
+		else:
+			return redirect(url_for('login', msg = 'wrong password'))
+
+		# print(id)
 	else:
 		return redirect(url_for('login', msg = 'Login failed'))
 
@@ -55,12 +56,15 @@ def sign_up():
 	name = str(request.form['name'])
 	email = str(request.form['email'])
 	phone = str(request.form['phone'])
-
+	password = str(request.form['psw'])
 	cur = mysql.connection.cursor()
 	cur.execute("SELECT MAX(user_id) FROM user")
 	maxid = cur.fetchone()
 	print(maxid)
-	cmd = f'''INSERT INTO user (user_id, name, coins, email_id, contact_num) VALUES ({maxid['MAX(user_id)'] + 1}, '{name}', 100, '{email}', '{phone}')'''
+	try:
+		cmd = f'''INSERT INTO user (user_id, name, user_type, email_id, contact_num, location, password) VALUES ({maxid['MAX(user_id)'] + 1}, '{name}', 1, '{email}', '{phone}', '110025', '{password}')'''
+	except:
+		cmd = f'''INSERT INTO user (user_id, name, user_type, email_id, contact_num, location, password) VALUES (1, '{name}', 1, '{email}', '{phone}', '110025', '{password}')'''
 	print(cmd)
 	cur.execute(cmd)
 	mysql.connection.commit()
