@@ -11,12 +11,19 @@
 <body>
 	<div class="searchbox">
 		<h2>Search</h2>
+		
 		<form action="{{ url_for('search') }}" method="GET">
 			<input class="searchbar" placeholder="Name" type="text" name="name">
 			<br><br>
 			<input class="searchbar" placeholder="Author" type="text" name="author">
 			<br><br>
-			<input class="searchbar" placeholder="Genre" type="text" name="genre">
+            <label>Genres</label>
+             <select id = "genre" name="genre">
+             	<option value=""> </option>
+             	{% for genre in available_genres %}
+					<option value = "{{ genre['genre_name'] }}">{{ genre['genre_name'] }}</option>
+				{% endfor %}
+             </select>
 			<br><br>
 			<button type="submit">Search</button>
 		</form>
