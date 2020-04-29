@@ -90,8 +90,12 @@ def home(name, user_id):
 
 	if 'mybooks' in session:
 		session.pop('mybooks', None)
+	cur = mysql.connection.cursor()
+	cmd = f"SELECT * from genre"
+	cur.execute(cmd)
+	available_genres = list(cur.fetchall())
 
-	return render_template('home.html', name = name, user_id = user_id)
+	return render_template('home.html', name = name, user_id = user_id, available_genres = available_genres)
 
 @app.route('/search', methods = ['GET'])
 def search():
