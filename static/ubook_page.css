@@ -1,0 +1,24 @@
+.ads, .review {
+	border: solid;
+	border-color: black;
+	width: 20pc;
+	padding: 5px;
+	margin-bottom: 5px;
+}
+
+.reviews {
+	float: right;
+}
+
+form {
+	display: none;
+	border: solid;
+	width: 20pc;
+	padding: 5px;
+}
+
+#recommend {
+	display: block;
+	margin-bottom: 20px;
+	font-size: large;
+}

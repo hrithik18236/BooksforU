@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<h1>Preferences</h1>
+	<h3>Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</h3>
+</head>
+<body>
+	<div style="margin-bottom: 5pc;">
+		<h3>Available Genres</h3>
+		<p>click on a genre to add it to your preferences</p>
+		{% for genre in available_genres %}
+			<a href="{{ url_for('preferences', todo = 'add', genre = genre['genre_name']) }}">{{ genre['genre_name'] }}</a>
+		{% endfor %}
+	</div>
+
+	<div>
+		<h3>Preferred Genres</h3>
+		<p>click on a genre to remove it from your preferences</p>
+		{% for genre in preferred_genres %}
+			<a href="{{ url_for('preferences', todo = 'remove', genre = genre['genre_name']) }}">{{ genre['genre_name'] }}</a>
+		{% endfor %}
+	</div>
+
+	
+</body>
+</html>

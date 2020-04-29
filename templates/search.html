@@ -8,7 +8,7 @@
 </head>
 <body>
 	{% for result in search_results %}
-		<p>{{ result }}</p>
+		<a href="{{ url_for('ubook_page', unique_id = result['unique_id']) }}">{{ result['name']}} by {{ result['author'] }}</a>
 	{% endfor %}
 </body>
 </html>

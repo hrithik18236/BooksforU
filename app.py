@@ -1,26 +1,30 @@
 from flask import Flask, render_template, redirect, url_for, request, session
 from flask_mysqldb import MySQL
 from difflib import SequenceMatcher
+import config
 
 app = Flask(__name__)
 
 app.secret_key = '9afd69d3d6ff1bdd87f0deb0'
 
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = '1234'
-app.config['MYSQL_DB'] = 'dbms'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+user_types = {1: 'school student', 2: 'college student', 3: "professor"}
+
+app.config['MYSQL_HOST'] = config.MYSQL_HOST
+app.config['MYSQL_USER'] = config.MYSQL_USER
+app.config['MYSQL_PASSWORD'] = config.MYSQL_PASSWORD
+app.config['MYSQL_DB'] = config.MYSQL_DB
+app.config['MYSQL_CURSORCLASS'] = config.MMYSQL_CURSORCLASS
 
 mysql = MySQL(app)
 
 @app.route('/')
 @app.route('/login')
-def login():
+@app.route('/login/<msg>')
+def login(msg = 'hola'):
 	if 'loggedin' in session:
 		return redirect(url_for('home', name = session['name'], user_id = session['id']))
 
-	return render_template('login.html', msg = 'hola')
+	return render_template('login.html', msg = msg)
 
 @app.route('/checkuser', methods = ['POST'])
 def check_user():
@@ -30,15 +34,16 @@ def check_user():
 	cur.execute(f"SELECT * FROM user WHERE email_id = '{email}'")
 	user = cur.fetchone()
 	if user:
-		if (user['password']==password):
+		if (user['password'] == password):
 			session['loggedin'] = True
 			session['id'] = user['user_id']
 			session['name'] = user['name']
 			session['email'] = user['email_id']
+			session['user_type'] = user['user_type']
 			# Redirect to home page
 			return redirect(url_for('home', name = user['name'], user_id = user['user_id']))
 		else:
-			return redirect(url_for('login', msg = 'wrong password'))
+			return redirect(url_for('login', msg = 'Wrong email or password'))
 
 		# print(id)
 	else:
@@ -57,19 +62,26 @@ def sign_up():
 	email = str(request.form['email'])
 	phone = str(request.form['phone'])
 	password = str(request.form['psw'])
+	location = str(request.form['location'])
+	user_type = request.form['user_type']
+
 	cur = mysql.connection.cursor()
 	cur.execute("SELECT MAX(user_id) FROM user")
 	maxid = cur.fetchone()
 	print(maxid)
+
+	# insert into user table
+
 	try:
-		cmd = f'''INSERT INTO user (user_id, name, user_type, email_id, contact_num, location, password) VALUES ({maxid['MAX(user_id)'] + 1}, '{name}', 1, '{email}', '{phone}', '110025', '{password}')'''
+		cmd = f'''INSERT INTO user (user_id, name, email_id, contact_num, location, password, user_type) VALUES ({maxid['MAX(user_id)'] + 1}, '{name}', '{email}', '{phone}', '{location}', '{password}', '{user_type}')'''
 	except:
-		cmd = f'''INSERT INTO user (user_id, name, user_type, email_id, contact_num, location, password) VALUES (1, '{name}', 1, '{email}', '{phone}', '110025', '{password}')'''
+		cmd = f'''INSERT INTO user (user_id, name, email_id, contact_num, location, password, user_type) VALUES (1, '{name}', '{email}', '{phone}', '{location}', '{password}', '{user_type}')'''
+	
 	print(cmd)
 	cur.execute(cmd)
 	mysql.connection.commit()
 
-	return redirect(url_for('login', msg = 'now you may login'))
+	return redirect(url_for('login', msg = 'now you can login'))
 
 @app.route('/home/<name>/<user_id>')
 def home(name, user_id):
@@ -129,6 +141,175 @@ def search():
 
 	return render_template('search.html', search_results = search_results)
 
+@app.route('/book/<unique_id>')
+def ubook_page(unique_id):
+	cur = mysql.connection.cursor()
+
+	# get unique_book details
+
+	cmd = f"SELECT * FROM unique_books WHERE unique_id = {unique_id}"
+	cur.execute(cmd)
+	unique_book = cur.fetchone()
+
+	# get all_book details
+
+	cmd = f"SELECT * FROM all_books WHERE unique_id = {unique_id}"
+	cur.execute(cmd)
+	all_books = cur.fetchall()
+
+	# get genre details
+
+	cmd = f"SELECT genre_name FROM book_genre_relation WHERE unique_id = {unique_id}"
+	cur.execute(cmd)
+	genres = cur.fetchall()
+	unique_book['genres'] = []
+
+	for genre in genres:
+		unique_book['genres'].append(genre['genre_name'])
+
+	# get reviews
+
+	cmd = f"SELECT * FROM review WHERE unique_id = {unique_id}"
+	cur.execute(cmd)
+	reviews = cur.fetchall()
+	unique_book['reviews'] = []
+
+	for review in reviews:
+		cmd = f"SELECT name, user_type FROM user WHERE user_id = {review['user_id']}"
+		cur.execute(cmd)
+		res = cur.fetchone()
+		print(res)
+		review['name'] = res['name']
+		review['user_type'] = res['user_type']
+
+		unique_book['reviews'].append(review)
+
+	# get user details and respective transaction type details
+
+	for i in range(len(all_books)):
+		cmd = f"SELECT * FROM user WHERE user_id = {all_books[i]['user_id']}"
+		cur.execute(cmd)
+		user = cur.fetchone()
+		all_books[i].update(user)
+
+		if all_books[i]['transaction_type'] == 1:
+			cmd = f"SELECT * FROM available_for_exchange WHERE book_id = {all_books[i]['user_id']}"
+		
+		if all_books[i]['transaction_type'] == 2:
+			cmd = f"SELECT * FROM available_for_borrowing WHERE book_id = {all_books[i]['user_id']}"
+
+		if all_books[i]['transaction_type'] == 3:
+			cmd = f"SELECT * FROM available_for_buying WHERE book_id = {all_books[i]['user_id']}"
+
+		cur.execute(cmd)
+		details = cur.fetchone()
+		all_books[i].update(details)
+
+	return render_template('ubook_page.html', unique_book = unique_book, all_books = all_books, user_types = user_types)
+
+@app.route('/review', methods = ['POST'])
+def review():
+	cur = mysql.connection.cursor()
+
+	user_id = session['id']
+	rating = request.form['rating']
+	title = request.form['title']
+	body = request.form['body']
+	unique_id = request.form['unique_id']
+
+	try:
+		cur.execute("SELECT MAX(review_id) FROM review")
+		maxid = cur.fetchone()
+		rid = maxid['MAX(review_id)'] + 1
+
+	except:
+		rid = 1
+
+	cmd = f"INSERT INTO review VALUES ({rid}, '{title}', {user_id}, '{body}', {unique_id})"
+	print(cmd)
+	cur.execute(cmd)
+
+	cur.execute(f"SELECT review_count FROM unique_books WHERE unique_id = {unique_id}")
+	review_count = cur.fetchone()
+	print(review_count)
+	review_count = review_count['review_count']
+
+	cur.execute(f"SELECT rating FROM unique_books WHERE unique_id = {unique_id}")
+	curr_rating = cur.fetchone()
+	curr_rating = curr_rating['rating']
+
+	# calculate new rating
+
+	new_rating = (curr_rating * review_count + int(rating)) / (review_count + 1)
+
+	# update unique_books
+
+	cmd = f"UPDATE unique_books SET rating = {new_rating}, review_count = {review_count + 1}"
+	cur.execute(cmd)
+
+	mysql.connection.commit()
+
+	return redirect(url_for('success_page', msg = 'Review added successfully!'))
+
+@app.route('/preferences')
+@app.route('/preferences/<todo>/<genre>')
+def preferences(todo = None, genre = None):
+	cur = mysql.connection.cursor()
+
+	if todo is None:
+		cmd = f"SELECT * from genre"
+		cur.execute(cmd)
+		available_genres = list(cur.fetchall())
+
+		print(available_genres)
+
+		cmd = f"SELECT genre_name FROM preferences WHERE user_id = {session['id']}"
+		cur.execute(cmd)
+		preferred_genres = cur.fetchall()
+
+		print(preferred_genres)	
+
+		for genre in preferred_genres:
+			available_genres.remove(genre)
+
+		print(available_genres)
+
+		return render_template('preferences.html', available_genres = available_genres, preferred_genres = preferred_genres)
+
+	elif todo == 'add':
+		cmd = f"INSERT INTO preferences VALUES ({session['id']}, '{genre}', {session['user_type']})"
+		cur.execute(cmd)
+
+	elif todo == "remove":
+		cmd = f"DELETE FROM preferences WHERE user_id = {session['id']} AND genre_name = '{genre}'"
+		print(cmd)
+		cur.execute(cmd)
+
+	mysql.connection.commit()
+
+	return redirect(url_for('preferences'))	
+
+@app.route('/recommend/<unique_id>')
+def recommend(unique_id):
+	cur = mysql.connection.cursor()
+
+	try:
+		# add to recommendations
+		cmd = f"INSERT INTO recommendations VALUES ({session['id']}, {unique_id})"
+		cur.execute(cmd)
+
+		# increment recommendation count in unique_bookss
+		cmd = f"UPDATE unique_books SET recommendation_count = recommendation_count + 1 WHERE unique_id = {unique_id}"
+		cur.execute(cmd)
+
+		msg = "Recommended successfully!"
+
+	except:
+		msg = "You have already recommended this!"
+
+	mysql.connection.commit()
+	return redirect(url_for('success_page', msg = msg))
+
 @app.route('/addbook', methods = ['GET', 'POST'])
 def add_book():
 	if 'loggedin' not in session:
@@ -182,7 +363,7 @@ def add_book2(transaction_type):
 				uid = maxid['MAX(unique_id)'] + 1
 			except:
 				uid = 1
-			cmd = f"INSERT INTO unique_books VALUES ({uid}, '{session['book_to_add']['name']}', '{session['book_to_add']['author']}', 1, 0, 0, 1)"
+			cmd = f"INSERT INTO unique_books VALUES ({uid}, '{session['book_to_add']['name']}', '{session['book_to_add']['author']}', 0, 0, 0, 1)"
 			print(cmd)
 			cur.execute(cmd)
 

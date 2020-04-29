@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<link rel="stylesheet" href="../static/ubook_page.css">
+</head>
+<body>
+	<h1>{{ unique_book['name'] }}</h1>
+	<h2>By {{ unique_book['author'] }}</h2>
+
+	{% if session['user_type'] == 3 %}
+		<a href="{{ url_for('recommend', unique_id = unique_book['unique_id']) }}" id="recommend">Recommend this!</a>
+		<br>
+	{% endif %}
+
+	<b>Genres:</b>
+	{% for genre in unique_book['genres'] %}
+		{{ genre }} 
+	{% endfor %}
+
+	<br><br>
+
+	<button id="rate">Rate and Review</button>
+	<br><br>
+
+	<div class="reviews">
+		<h3>Reviews</h3>
+		{% for review in unique_book['reviews'] %}
+		<div class="review">
+			<p><b>Posted by:</b> {{  review['name' ]}} ({{ user_types[review['user_type']] }})</p>
+			<p><b>{{  review['title'] }}</b></p>
+			<p>{{  review['body'] }}</p>
+		</div>
+		{% endfor %}
+
+	</div>
+
+	<form action="{{ url_for('review') }}" method="POST">
+		<label for="">Rating</label>
+		<input type="number" min="1" max="10" name="rating" required>
+		<br><br>
+		<label for="">Title</label>
+		<input type="text" name="title" required>
+		<br><br>
+		<label for="">Review</label>
+		<input type="text" name="body" required>
+		<br>
+		<br>
+		<input style="display: none;" type="number" name="unique_id" value="{{ unique_book['unique_id'] }}">
+		<button type="submit">Submit</button>
+	</form>
+
+	<br><br>
+
+	<h3>Ads</h3>
+	{% for book in all_books %}
+		<div class="ads">
+			<p><b>Posted by:</b> {{  book['name' ]}}</p>
+			<p><b>Location:</b> {{  book['location' ]}}</p>
+			<p><b>Contact No.:</b> {{  book['contact_num' ]}}</p>
+			<p><b>Description:</b> {{  book['description' ]}}</p>
+			<p><b>Page count:</b> {{  book['page_count' ]}}</p>
+			
+			{% if book['transaction_type'] == 1 %}
+				<p><b>Available for:</b> Exchanging</p>
+				<p><b>Exchange description:</b> {{ book['exchange_with'] }}</p>
+			{% endif %}
+
+			{% if book['transaction_type'] == 2 %}
+				<p><b>Available for:</b> Borrowing</p>
+				<p><b>Price:</b> {{ book['price'] }}</p>
+				<p><b>No. of days it can be borrowed for:</b> {{ book['num_of_days'] }}</p>
+			{% endif %}
+
+			{% if book['transaction_type'] == 3 %}
+				<p><b>Available for:</b> Buying</p>
+				<p><b>Price:</b> {{ book['price'] }}</p>
+			{% endif %}
+		</div>
+		<!-- {{ book }} -->
+	{% endfor %}
+
+	<script src="../static/ubook_page.js"></script>
+</body>
+</html>
