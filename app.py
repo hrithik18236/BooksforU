@@ -93,9 +93,9 @@ def search():
 	search_results = []
 
 	if True:
-		name.lower()
-		author.lower()
-		genre.lower()
+		name = name.lower().strip()
+		suthor = author.lower().strip()
+		genre = genre.lower().strip()
 
 		if len(genre) == 0:
 			cmd = f"SELECT * FROM unique_books WHERE lower(name) LIKE '%{name}%' AND lower(author) LIKE '%{author}%'"
@@ -138,9 +138,9 @@ def add_book():
 		
 		# replace single with double quotes to safely insert in database
 
-		bookname = request.form['name']
-		author = request.form['author']
-		description = request.form['description']
+		bookname = request.form['name'].strip()
+		author = request.form['author'].strip()
+		description = request.form['description'].strip()
 		transaction_type = request.form['transaction_type']
 
 		session['book_to_add'] = request.form
