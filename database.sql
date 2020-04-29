@@ -1,6 +1,7 @@
 CREATE TABLE `review` (
    `review_id` INT NOT NULL,
    `title` varchar(255) NOT NULL,
+   `author` varchar(255) NOT NULL,
    `user_id` INT NOT NULL,
    `body` varchar(255) NOT NULL,
    `unique_id` INT NOT NULL,
@@ -11,13 +12,13 @@ CREATE INDEX idx_review ON review(review_id,unique_id);
  
 CREATE TABLE `archive` (
    `transaction_id` INT NOT NULL,
-   `book_id` INT NOT NULL,
+   `unique_id` INT NOT NULL,
    `producer_id` INT NOT NULL,
-   `transaction_type` varchar(255) NOT NULL,
+   `transaction_type` INT NOT NULL,
    PRIMARY KEY (`transaction_id`)
 );
 CREATE INDEX idx_archive_producer ON archive(transaction_id,producer_id);
-CREATE INDEX idx_archive_book ON archive(transaction_id,book_id);
+CREATE INDEX idx_archive_book ON archive(transaction_id,unique_id);
  
 CREATE TABLE `all_books` (
    `book_id` INT NOT NULL,
@@ -100,23 +101,23 @@ CREATE TABLE `available_for_exchange` (
  
 CREATE INDEX idx_avail_exc_book ON available_for_exchange(book_id);
  
-CREATE TABLE `advertisement` (
-   `ad_id` INT NOT NULL AUTO_INCREMENT,
-   `description` varchar(255) NOT NULL,
-   `start` DATETIME NOT NULL,
-   `end` DATETIME NOT NULL,
-   `user_id` INT NOT NULL,
-   PRIMARY KEY (`ad_id`)
-);
- 
-CREATE INDEX idx_adver ON advertisement(add_id);
-CREATE INDEX idx_adver_user ON advertisement(user_id);
-CREATE INDEX idx_adver_time ON advertisement(start,end);
- 
 CREATE TABLE `book_genre_relation` (
    `unique_id` INT NOT NULL,
    `genre_name` varchar(30) NOT NULL,
    PRIMARY KEY (`unique_id`,`genre_name`)
+);
+ 
+CREATE TABLE `preferences` (
+   `user_id` INT NOT NULL,
+   `genre_name` varchar(30) NOT NULL,
+   `user_type` INT NOT NULL,
+   PRIMARY KEY (`user_id`,`genre_name`)
+);
+ 
+CREATE TABLE `recommendations` (
+   `user_id` INT NOT NULL,
+   `unique_id` INT NOT NULL,
+   PRIMARY KEY (`unique_id`,`user_id`)
 );
  
 CREATE INDEX idx_book_genre_rel_unique ON book_genre_relation(unique_id);
@@ -126,9 +127,7 @@ ALTER TABLE `review` ADD CONSTRAINT `review_fk0` FOREIGN KEY (`unique_id`) REFER
  
 ALTER TABLE `review` ADD CONSTRAINT `review_fk1` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`);
  
-ALTER TABLE `archive` ADD CONSTRAINT `archive_fk0` FOREIGN KEY (`book_id`) REFERENCES `all_books`(`book_id`);
- 
-ALTER TABLE `archive` ADD CONSTRAINT `archive_fk1` FOREIGN KEY (`producer_id`) REFERENCES `user`(`user_id`);
+ALTER TABLE `archive` ADD CONSTRAINT `archive_fk0` FOREIGN KEY (`producer_id`) REFERENCES `user`(`user_id`);
  
 ALTER TABLE `all_books` ADD CONSTRAINT `all_books_fk0` FOREIGN KEY (`unique_id`) REFERENCES `unique_books`(`unique_id`);
  
@@ -138,14 +137,20 @@ ALTER TABLE `available_for_buying` ADD CONSTRAINT `available_for_buying_fk0` FOR
  
 ALTER TABLE `available_for_exchange` ADD CONSTRAINT `available_for_exchange_fk0` FOREIGN KEY (`book_id`) REFERENCES `all_books`(`book_id`);
  
-ALTER TABLE `advertisement` ADD CONSTRAINT `advertisement_fk0` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`);
- 
 ALTER TABLE `book_genre_relation` ADD CONSTRAINT `book_genre_relation_fk0` FOREIGN KEY (`unique_id`) REFERENCES `unique_books`(`unique_id`);
  
 ALTER TABLE `book_genre_relation` ADD CONSTRAINT `book_genre_relation_fk1` FOREIGN KEY (`genre_name`) REFERENCES `genre`(`genre_name`);
  
+ALTER TABLE `preferences` ADD CONSTRAINT `perferences_fk0` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`);
+ 
+ALTER TABLE `preferences` ADD CONSTRAINT `perferences_fk1` FOREIGN KEY (`genre_name`) REFERENCES `genre`(`genre_name`);
+ 
+ALTER TABLE `recommendations` ADD CONSTRAINT `recommendations_fk0` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`);
+ 
+ALTER TABLE `recommendations` ADD CONSTRAINT `recommendations_fk1` FOREIGN KEY (`unique_id`) REFERENCES `unique_books`(`unique_id`);
+ 
 alter table unique_books
-add constraint CHK_RATING CHECK (rating >= 1 and rating <= 10);
+add constraint CHK_RATING CHECK (rating >= 0 and rating <= 10);
  
 alter table all_books
 add constraint TRANS_CHECK CHECK (transaction_type >= 1 and transaction_type <= 3);
@@ -159,6 +164,8 @@ add constraint PRICE_CHECK CHECK (price >= 0);
 alter table available_for_buying
 add constraint PRICE_CHECK2 CHECK (price >= 0);
  
+
+
 insert into user (user_id, name, email_id, contact_num, coins) values (1, 'Leighton Sandys', 'lsandys0@domainmarket.com', '8466266364', 0);
 insert into user (user_id, name, email_id, contact_num, coins) values (2, 'Amberly Rainbird', 'arainbird1@163.com', '9997329196', 0);
 insert into user (user_id, name, email_id, contact_num, coins) values (3, 'Pauline Eskriet', 'peskriet2@about.me', '9347776135', 0);
@@ -194,12 +201,15 @@ insert into all_books (book_id, description, page_count, transaction_type, uniqu
 insert into all_books (book_id, description, page_count, transaction_type, unique_id) values (17, 'Ut tellus. Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus.', 622, 2, 9);
 insert into all_books (book_id, description, page_count, transaction_type, unique_id) values (18, 'In congue. Etiam justo.', 116, 1, 7);
 insert into all_books (book_id, description, page_count, transaction_type, unique_id) values (19, 'Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem. Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi.', 570, 2, 7);
+ 
+
 
 insert into advertisement (ad_id, description, start, end, book_id) values (1, 'In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue.', '9/27/2019', '5/28/2019', 9);
 insert into advertisement (ad_id, description, start, end, book_id) values (2, 'Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus. Nulla ut erat id mauris vulputate elementum. Nullam varius.', '6/27/2019', '3/21/2019', 2);
 insert into advertisement (ad_id, description, start, end, book_id) values (3, 'Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo.', '5/12/2019', '8/23/2019', 13);
 insert into advertisement (ad_id, description, start, end, book_id) values (4, 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae.', '5/4/2019', '2/2/2020', 1);
 insert into advertisement (ad_id, description, start, end, book_id) values (5, 'Nulla justo. Aliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis.', '4/8/2019', '1/10/2020', 8);
+
 
 
 insert into available_for_borrowing (book_id, price, num_of_days) values (1, 375, 85);
@@ -209,6 +219,7 @@ insert into available_for_borrowing (book_id, price, num_of_days) values (13, 55
 insert into available_for_borrowing (book_id, price, num_of_days) values (15, 804, 188);
 insert into available_for_borrowing (book_id, price, num_of_days) values (18, 500, 313);
  
+
 
 insert into available_for_buying (book_id, price) values (3, 631);
 insert into available_for_buying (book_id, price) values (5, 392);
@@ -225,7 +236,7 @@ insert into available_for_exchange (book_id, exchange_with) values (14, 'Return 
 insert into available_for_exchange (book_id, exchange_with) values (16, 'Alila');
 insert into available_for_exchange (book_id, exchange_with) values (17, 'Ecstasy (Éxtasis)');
 insert into available_for_exchange (book_id, exchange_with) values (19, 'Robber, The (Der Räuber)');
-
+ 
 
 insert into book_genre_relation (unique_id, genre_name) values (1, 'Horror');
 insert into book_genre_relation (unique_id, genre_name) values (1, 'Mystery');
@@ -247,7 +258,6 @@ insert into book_genre_relation (unique_id, genre_name) values (10, 'Horror');
 insert into book_genre_relation (unique_id, genre_name) values (10, 'Mystery');
  
 
-
 insert into genre (genre_name, book_count) values ('Horror', 2);
 insert into genre (genre_name, book_count) values ('Thriller', 2);
 insert into genre (genre_name, book_count) values ('Romance', 2);
@@ -257,6 +267,7 @@ insert into genre (genre_name, book_count) values ('Non-fiction', 2);
 insert into genre (genre_name, book_count) values ('Physics', 2);
 insert into genre (genre_name, book_count) values ('Comic', 2);
  
+
 
 insert into review (review_id, title, author, body, unique_id) values (1, 'sed magna at', 'Melita Heintzsch', 'Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.', 1);
 insert into review (review_id, title, author, body, unique_id) values (2, 'ut erat curabitur', 'Latrena Byrth', 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim.', 1);
@@ -304,6 +315,5 @@ insert into unique_books (unique_id, name, author, rating, review_count, recomme
 insert into unique_books (unique_id, name, author, rating, review_count, recommendation_count, book_count) values (9, 'No Way Out', 'Dani Peartree', 9.4, 3, 1, 1);
 insert into unique_books (unique_id, name, author, rating, review_count, recommendation_count, book_count) values (10, 'Adventures of the Wilderness Family, The', 'Roderick Boman', 8.5, 3, 5, 2);
  
-
 insert into past_transactions (transaction_id, book_id, producer_id, consumer_id, transaction_type, price) values (1, 20, 7, 3, 3, 915);
 insert into past_transactions (transaction_id, book_id, producer_id, consumer_id, transaction_type, price) values (2, 21, 8, 5, 1, 257);
