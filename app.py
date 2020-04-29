@@ -92,6 +92,10 @@ def home(name, user_id):
 
 	if 'mybooks' in session:
 		session.pop('mybooks', None)
+	cur = mysql.connection.cursor()
+	cmd = f"SELECT * from genre"
+	cur.execute(cmd)
+	available_genres = list(cur.fetchall())
 
 	cmd = f"select new.genre_name from (select genre_name, count(*) as cnt from preferences group by genre_name) as new;"
 	cur.execute(cmd)
