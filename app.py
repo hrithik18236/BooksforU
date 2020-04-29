@@ -69,7 +69,7 @@ def sign_up():
 	cur.execute(cmd)
 	mysql.connection.commit()
 
-	return 'Inserted!'
+	return redirect(url_for('login', msg = 'now you may login'))
 
 @app.route('/home/<name>/<user_id>')
 def home(name, user_id):
@@ -178,7 +178,10 @@ def add_book2(transaction_type):
 
 			cur.execute("SELECT MAX(unique_id) FROM unique_books")
 			maxid = cur.fetchone()
-			uid = maxid['MAX(unique_id)'] + 1
+			try:
+				uid = maxid['MAX(unique_id)'] + 1
+			except:
+				uid = 1
 			cmd = f"INSERT INTO unique_books VALUES ({uid}, '{session['book_to_add']['name']}', '{session['book_to_add']['author']}', 1, 0, 0, 1)"
 			print(cmd)
 			cur.execute(cmd)
@@ -200,7 +203,10 @@ def add_book2(transaction_type):
 		# cur = mysql.connection.cursor()
 		cur.execute("SELECT MAX(book_id) FROM all_books")
 		maxid = cur.fetchone()
-		max_bid = maxid['MAX(book_id)'] + 1
+		try:
+			max_bid = maxid['MAX(book_id)'] + 1
+		except:
+			max_bid = 1
 		cmd = f"INSERT INTO all_books VALUES ({max_bid}, '{session['book_to_add']['description']}', {session['book_to_add']['pagecount']}, {transaction_type}, {uid}, {session['id']})"
 		print(cmd)
 		cur.execute(cmd)
@@ -252,6 +258,10 @@ def add_book2(transaction_type):
 				print(cmd)
 				cur.execute(cmd)
 
+			cmd = f"INSERT INTO book_genre_relation VALUES ({uid}, '{request.form['genre2'].lower()}')"
+			print(cmd)
+			cur.execute(cmd)
+
 		if len(request.form["genre3"]) > 0:
 			cmd = f"SELECT * FROM genre WHERE lower(genre_name) = '{request.form['genre3'].lower()}'"
 			cur.execute(cmd)
@@ -260,6 +270,10 @@ def add_book2(transaction_type):
 				cmd = f"INSERT INTO genre VALUES ('{request.form['genre3'].lower()}')"
 				print(cmd)
 				cur.execute(cmd)
+
+			cmd = f"INSERT INTO book_genre_relation VALUES ({uid}, '{request.form['genre3'].lower()}')"
+			print(cmd)
+			cur.execute(cmd)
 
 		mysql.connection.commit()
 
