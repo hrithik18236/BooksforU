@@ -88,19 +88,45 @@ def home(name, user_id):
 	if 'loggedin' not in session:
 		return redirect(url_for('login'))
 
+	cur = mysql.connection.cursor()
+
 	if 'mybooks' in session:
 		session.pop('mybooks', None)
 
-	return render_template('home.html', name = name, user_id = user_id)
+	cmd = f"select new.genre_name from (select genre_name, count(*) as cnt from preferences group by genre_name) as new;"
+	cur.execute(cmd)
+	trending_genres = cur.fetchall()
+
+	cmd = f'''select name from unique_books 
+			where unique_id in (select * from (
+			select unique_id from book_genre_relation 
+			where genre_name in (select * from (
+			select genre_name from preferences 
+			where user_id = {session['id']}) as temp2)
+			order by RAND()
+			LIMIT 3) as temp1);'''
+	
+	cur.execute(cmd)
+	recommendations = cur.fetchall()
+
+	cmd = f'''select genre_name from (
+			select new.genre_name, new.user_type, RANK() over (partition by new.user_type order by new.cnt desc) from (
+			select genre_name,user_type, count(*) as cnt from preferences group by user_type, genre_name
+        	) as new
+			) as r where user_type = '{session['user_type']}';'''
+	
+	cur.execute(cmd)
+	user_type_recommendations = cur.fetchall()
+
+	return render_template('home.html', name = name, user_id = user_id, trending_genres = trending_genres, recommendations = recommendations, user_type_recommendations = user_type_recommendations)
 
 @app.route('/search', methods = ['GET'])
 def search():
+	cur = mysql.connection.cursor()
 	name = request.args.get('name', "")
 	author = request.args.get('author', "")
 	# description = request.args.get('description', "")
 	genre = request.args.get('genre', "")
-
-	cur = mysql.connection.cursor()
 
 	search_results = []
 
@@ -186,6 +212,8 @@ def ubook_page(unique_id):
 
 	# get user details and respective transaction type details
 
+	print("Allbooks:", all_books)
+
 	for i in range(len(all_books)):
 		cmd = f"SELECT * FROM user WHERE user_id = {all_books[i]['user_id']}"
 		cur.execute(cmd)
@@ -193,16 +221,17 @@ def ubook_page(unique_id):
 		all_books[i].update(user)
 
 		if all_books[i]['transaction_type'] == 1:
-			cmd = f"SELECT * FROM available_for_exchange WHERE book_id = {all_books[i]['user_id']}"
+			cmd = f"SELECT * FROM available_for_exchange WHERE book_id = {all_books[i]['book_id']}"
 		
 		if all_books[i]['transaction_type'] == 2:
-			cmd = f"SELECT * FROM available_for_borrowing WHERE book_id = {all_books[i]['user_id']}"
+			cmd = f"SELECT * FROM available_for_borrowing WHERE book_id = {all_books[i]['book_id']}"
 
 		if all_books[i]['transaction_type'] == 3:
-			cmd = f"SELECT * FROM available_for_buying WHERE book_id = {all_books[i]['user_id']}"
+			cmd = f"SELECT * FROM available_for_buying WHERE book_id = {all_books[i]['book_id']}"
 
 		cur.execute(cmd)
 		details = cur.fetchone()
+		print("dets:", details)
 		all_books[i].update(details)
 
 	return render_template('ubook_page.html', unique_book = unique_book, all_books = all_books, user_types = user_types)

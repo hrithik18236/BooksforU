@@ -13,14 +13,38 @@
 		<h2>Search</h2>
 		<form action="{{ url_for('search') }}" method="GET">
 			<input class="searchbar" placeholder="Name" type="text" name="name">
-			<br><br>
+			<!-- <br><br> -->
 			<input class="searchbar" placeholder="Author" type="text" name="author">
-			<br><br>
+			<!-- <br><br> -->
 			<input class="searchbar" placeholder="Genre" type="text" name="genre">
-			<br><br>
+			<!-- <br><br> -->
 			<button type="submit">Search</button>
 		</form>
 	</div>
+
+	<div class="promo">
+		<div class="trending_genres promotion">
+			<h3>Most Preferred Genres</h3>
+			{% for genre in trending_genres %}
+				<a href="{{ url_for('search', genre = genre['genre_name']) }}">{{ genre['genre_name'] }}</a>
+			{% endfor %}
+		</div>
+	
+		<div class="recommendations promotion">
+			<h3>Books Curated For You</h3>
+			{% for recommendation in recommendations %}
+				<a href="{{ url_for('search', name = recommendation['name']) }}">{{ recommendation['name'] }}</a>
+			{% endfor %}
+		</div>
+	
+		<div class="recommendations promotion">
+			<h3>Genres Preferred By Similar Users</h3>
+			{% for recommendation in user_type_recommendations %}
+				<a href="{{ url_for('search', genre = recommendation['genre_name']) }}">{{ recommendation['genre_name'] }}</a>
+			{% endfor %}
+		</div>
+	</div>
+
 	<a href="/addbook">Add Book</a>
 	<br>
 	<a href="/mybooks">My Books</a>
