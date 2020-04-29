@@ -1,26 +1,24 @@
 CREATE TABLE `review` (
    `review_id` INT NOT NULL,
    `title` varchar(255) NOT NULL,
+   `author` varchar(255) NOT NULL,
    `user_id` INT NOT NULL,
    `body` varchar(255) NOT NULL,
    `unique_id` INT NOT NULL,
-   PRIMARY KEY (`review_id`),
-   INDEX ('review_id')
+   PRIMARY KEY (`review_id`)
 );
-
-CREATE INDEX idx_review_uniq ON review(unique_id);
+ 
+CREATE INDEX idx_review ON review(review_id,unique_id);
  
 CREATE TABLE `archive` (
-   `transaction_id` INT NOT NULL,
+   `archive_id` INT NOT NULL,
    `unique_id` INT NOT NULL,
-   `producer_id` INT NOT NULL,
+   `user_id` INT NOT NULL,
    `transaction_type` INT NOT NULL,
-   PRIMARY KEY (`transaction_id`),
-   INDEX ('transaction_id')
+   PRIMARY KEY (`archive_id`)
 );
-
-CREATE INDEX idx_archive_uniq ON archive(transaction_id,unique_id);
-CREATE INDEX idx_archive_uniq ON archive(transaction_id,producer_id);
+CREATE INDEX idx_archive_producer ON archive(archive_id,user_id);
+CREATE INDEX idx_archive_book ON archive(archive_id,unique_id);
  
 CREATE TABLE `all_books` (
    `book_id` INT NOT NULL,
@@ -29,26 +27,27 @@ CREATE TABLE `all_books` (
    `transaction_type` INT NOT NULL,
    `unique_id` INT NOT NULL,
    `user_id` INT NOT NULL,
-   PRIMARY KEY (`book_id`),
-   INDEX ('book_id')
+   PRIMARY KEY (`book_id`)
 );
-
-CREATE INDEX idx_all_books_uniq ON all_books(unique_id);
+ 
+CREATE INDEX idx_all_books_book ON all_books(book_id);
+CREATE INDEX idx_all_books_unique ON all_books(unique_id);
  
 CREATE TABLE `genre` (
    `genre_name` varchar(30) NOT NULL,
-   PRIMARY KEY (`genre_name`),
-   INDEX ('genre_name')
+   PRIMARY KEY (`genre_name`)
 );
+ 
+CREATE INDEX idx_genre ON genre(genre_name);
  
 CREATE TABLE `available_for_borrowing` (
    `book_id` INT NOT NULL,
    `price` INT NOT NULL,
    `num_of_days` INT NOT NULL,
-   PRIMARY KEY (`book_id`),
-   INDEX ('book_id')
+   PRIMARY KEY (`book_id`)
 );
-
+ 
+CREATE INDEX idx_avail_borrow_book ON available_for_borrowing(book_id);
 CREATE INDEX idx_avail_borrow_price ON available_for_borrowing(price);
 CREATE INDEX idx_avail_borrow_days ON available_for_borrowing(num_of_days);
  
@@ -60,10 +59,10 @@ CREATE TABLE `unique_books` (
    `review_count` INT NOT NULL,
    `recommendation_count` INT NOT NULL,
    `book_count` INT NOT NULL,
-   PRIMARY KEY (`unique_id`),
-   INDEX ('unique_id')
+   PRIMARY KEY (`unique_id`)
 );
-
+ 
+CREATE INDEX idx_unique_books_book ON unique_books(unique_id);
 CREATE INDEX idx_unique_books_count ON unique_books(book_count);
 CREATE INDEX idx_unique_books_name ON unique_books(name);
 CREATE INDEX idx_unique_books_author ON unique_books(author);
@@ -78,58 +77,57 @@ CREATE TABLE `user` (
    `contact_num` varchar(10) NOT NULL,
    `location` varchar(10) NOT NULL,
    `password` varchar(10) NOT NULL,
-   PRIMARY KEY (`user_id`),
-   INDEX ('user_id')
+   PRIMARY KEY (`user_id`)
 );
-
+ 
+CREATE INDEX idx_user_id ON user(user_id);
 CREATE INDEX idx_user_name ON user(name);
 CREATE INDEX idx_user_location ON user(location);
  
 CREATE TABLE `available_for_buying` (
    `book_id` INT NOT NULL,
    `price` INT NOT NULL,
-   PRIMARY KEY (`book_id`),
-   INDEX ('book_id')
+   PRIMARY KEY (`book_id`)
 );
-
+ 
+CREATE INDEX idx_avail_buy_book ON available_for_buying(book_id);
 CREATE INDEX idx_avail_buy_price ON available_for_buying(price);
  
 CREATE TABLE `available_for_exchange` (
    `book_id` INT NOT NULL,
    `exchange_with` varchar(255) NOT NULL,
-   PRIMARY KEY (`book_id`),
-   INDEX ('book_id')
+   PRIMARY KEY (`book_id`)
 );
+ 
+CREATE INDEX idx_avail_exc_book ON available_for_exchange(book_id);
  
 CREATE TABLE `book_genre_relation` (
    `unique_id` INT NOT NULL,
    `genre_name` varchar(30) NOT NULL,
-   PRIMARY KEY (`unique_id`,`genre_name`),
-   INDEX ('unique_id','genre_name')
+   PRIMARY KEY (`unique_id`,`genre_name`)
 );
  
 CREATE TABLE `preferences` (
    `user_id` INT NOT NULL,
    `genre_name` varchar(30) NOT NULL,
    `user_type` INT NOT NULL,
-   PRIMARY KEY (`user_id`,`genre_name`),
-   INDEX ('user_id','genre_name')
+   PRIMARY KEY (`user_id`,`genre_name`)
 );
-
-CREATE INDEX idx_pref_type ON preferences(user_type);
  
 CREATE TABLE `recommendations` (
    `user_id` INT NOT NULL,
    `unique_id` INT NOT NULL,
-   PRIMARY KEY (`unique_id`,`user_id`),
-   INDEX ('user_id','user_id')
+   PRIMARY KEY (`unique_id`,`user_id`)
 );
+ 
+CREATE INDEX idx_book_genre_rel_unique ON book_genre_relation(unique_id);
+CREATE INDEX idx_book_genre_rel_genre_name ON book_genre_relation(genre_name);
  
 ALTER TABLE `review` ADD CONSTRAINT `review_fk0` FOREIGN KEY (`unique_id`) REFERENCES `unique_books`(`unique_id`);
  
 ALTER TABLE `review` ADD CONSTRAINT `review_fk1` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`);
  
-ALTER TABLE `archive` ADD CONSTRAINT `archive_fk0` FOREIGN KEY (`producer_id`) REFERENCES `user`(`user_id`);
+ALTER TABLE `archive` ADD CONSTRAINT `archive_fk0` FOREIGN KEY (`user_id`) REFERENCES `user`(`user_id`);
  
 ALTER TABLE `all_books` ADD CONSTRAINT `all_books_fk0` FOREIGN KEY (`unique_id`) REFERENCES `unique_books`(`unique_id`);
  
