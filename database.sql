@@ -1,12 +1,10 @@
 CREATE TABLE `review` (
-   `review_id` INT NOT NULL,
-   `title` varchar(255) NOT NULL,
-   `author` varchar(255) NOT NULL,
    `user_id` INT NOT NULL,
+   `title` varchar(255) NOT NULL,
    `body` varchar(255) NOT NULL,
    `unique_id` INT NOT NULL,
-   PRIMARY KEY (`review_id`),
-   INDEX ('review_id')
+   PRIMARY KEY (`user_id`,`unique_id`),
+   INDEX (`user_id`,`unique_id`)
 );
  
 CREATE TABLE `archive` (
@@ -15,8 +13,7 @@ CREATE TABLE `archive` (
    `user_id` INT NOT NULL,
    `transaction_type` INT NOT NULL,
    PRIMARY KEY (`archive_id`),
-   INDEX ('archive_id')
-
+   INDEX (`archive_id`)
 );
 
 CREATE INDEX idx_archive_book ON archive(archive_id,unique_id);
@@ -29,7 +26,7 @@ CREATE TABLE `all_books` (
    `unique_id` INT NOT NULL,
    `user_id` INT NOT NULL,
    PRIMARY KEY (`book_id`),
-   INDEX ('book_id')
+   INDEX (`book_id`)
 );
  
 CREATE INDEX idx_all_books_unique ON all_books(unique_id);
@@ -37,7 +34,7 @@ CREATE INDEX idx_all_books_unique ON all_books(unique_id);
 CREATE TABLE `genre` (
    `genre_name` varchar(30) NOT NULL,
    PRIMARY KEY (`genre_name`),
-   INDEX ('genre_name')
+   INDEX (`genre_name`)
 );
  
 CREATE TABLE `available_for_borrowing` (
@@ -45,7 +42,7 @@ CREATE TABLE `available_for_borrowing` (
    `price` INT NOT NULL,
    `num_of_days` INT NOT NULL,
    PRIMARY KEY (`book_id`),
-   INDEX ('book_id')
+   INDEX (`book_id`)
 );
  
 CREATE INDEX idx_avail_borrow_price ON available_for_borrowing(price);
@@ -60,7 +57,7 @@ CREATE TABLE `unique_books` (
    `recommendation_count` INT NOT NULL,
    `book_count` INT NOT NULL,
    PRIMARY KEY (`unique_id`),
-   INDEX ('unique_id')
+   INDEX (`unique_id`)
 );
  
 CREATE INDEX idx_unique_books_count ON unique_books(book_count);
@@ -78,7 +75,7 @@ CREATE TABLE `user` (
    `location` varchar(10) NOT NULL,
    `password` varchar(10) NOT NULL,
    PRIMARY KEY (`user_id`),
-   INDEX ('user_id')
+   INDEX (`user_id`)
 );
 
 CREATE INDEX idx_user_name ON user(name);
@@ -88,7 +85,7 @@ CREATE TABLE `available_for_buying` (
    `book_id` INT NOT NULL,
    `price` INT NOT NULL,
    PRIMARY KEY (`book_id`),
-   INDEX ('book_id')
+   INDEX (`book_id`)
 );
 
 CREATE INDEX idx_avail_buy_price ON available_for_buying(price);
@@ -97,14 +94,14 @@ CREATE TABLE `available_for_exchange` (
    `book_id` INT NOT NULL,
    `exchange_with` varchar(255) NOT NULL,
    PRIMARY KEY (`book_id`),
-   INDEX ('book_id')
+   INDEX (`book_id`)
 );
  
 CREATE TABLE `book_genre_relation` (
    `unique_id` INT NOT NULL,
    `genre_name` varchar(30) NOT NULL,
    PRIMARY KEY (`unique_id`,`genre_name`),
-   INDEX ('unique_id','genre_name')
+   INDEX (`unique_id`,`genre_name`)
 );
  
 CREATE TABLE `preferences` (
@@ -112,14 +109,14 @@ CREATE TABLE `preferences` (
    `genre_name` varchar(30) NOT NULL,
    `user_type` INT NOT NULL,
    PRIMARY KEY (`user_id`,`genre_name`),
-   INDEX ('user_id','genre_name')
+   INDEX (`user_id`,`genre_name`)
 );
  
 CREATE TABLE `recommendations` (
    `user_id` INT NOT NULL,
    `unique_id` INT NOT NULL,
    PRIMARY KEY (`unique_id`,`user_id`),
-   INDEX ('unique_id','user_id')
+   INDEX (`unique_id`,`user_id`)
 );
 
 CREATE INDEX idx_book_genre_rel_genre_name ON book_genre_relation(genre_name);
@@ -257,39 +254,38 @@ insert into genre (genre_name, book_count) values ('Non-fiction', 2);
 insert into genre (genre_name, book_count) values ('Physics', 2);
 insert into genre (genre_name, book_count) values ('Comic', 2);
  
-insert into review (review_id, title, author, body, unique_id) values (1, 'sed magna at', 'Melita Heintzsch', 'Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.', 1);
-insert into review (review_id, title, author, body, unique_id) values (2, 'ut erat curabitur', 'Latrena Byrth', 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim.', 1);
-insert into review (review_id, title, author, body, unique_id) values (3, 'vel enim sit amet', 'Harley Siddon', 'Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum.', 1);
-insert into review (review_id, title, author, body, unique_id) values (4, 'volutpat erat quisque erat', 'Viviyan Erricker', 'Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', 1);
-insert into review (review_id, title, author, body, unique_id) values (5, 'leo odio condimentum', 'Olly Bellay', 'Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna.', 2);
-insert into review (review_id, title, author, body, unique_id) values (6, 'ridiculus mus vivamus vestibulum', 'Shermy Menary', 'Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat.', 2);
-insert into review (review_id, title, author, body, unique_id) values (7, 'dui maecenas tristique est et', 'Levi Bimrose', 'Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat.', 2);
-insert into review (review_id, title, author, body, unique_id) values (8, 'odio elementum eu', 'Ronald Bernini', 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est.', 2);
-insert into review (review_id, title, author, body, unique_id) values (9, 'iaculis congue vivamus metus arcu', 'Donni Kleinstein', 'Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 3);
-insert into review (review_id, title, author, body, unique_id) values (10, 'habitasse platea dictumst', 'Rodger Cottingham', 'Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus.', 3);
-insert into review (review_id, title, author, body, unique_id) values (11, 'in hac habitasse platea dictumst', 'Flss Beatens', 'Praesent blandit. Nam nulla.', 4);
-insert into review (review_id, title, author, body, unique_id) values (12, 'diam vitae quam suspendisse potenti', 'Myles Iliffe', 'Donec posuere metus vitae ipsum. Aliquam non mauris.', 4);
-insert into review (review_id, title, author, body, unique_id) values (13, 'nibh in quis justo maecenas', 'Jakie Pallister', 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est.', 4);
-insert into review (review_id, title, author, body, unique_id) values (14, 'orci eget orci vehicula', 'Gal Balshaw', 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue.', 4);
-insert into review (review_id, title, author, body, unique_id) values (15, 'odio odio elementum eu', 'Retha Rumney', 'Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc.', 4);
-insert into review (review_id, title, author, body, unique_id) values (16, 'sed vel enim', 'Marys Lantaff', 'Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.', 4);
-insert into review (review_id, title, author, body, unique_id) values (17, 'fermentum donec ut', 'Perri Darch', 'Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus.', 4);
-insert into review (review_id, title, author, body, unique_id) values (18, 'adipiscing molestie hendrerit at', 'Hedvig Brockhurst', 'Donec posuere metus vitae ipsum. Aliquam non mauris.', 4);
-insert into review (review_id, title, author, body, unique_id) values (19, 'phasellus sit amet erat nulla', 'Agosto Alfonsetti', 'Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat.', 4);
-insert into review (review_id, title, author, body, unique_id) values (20, 'nam tristique tortor eu', 'Melania Tudbald', 'Aenean fermentum. Donec ut mauris eget massa tempor convallis.', 4);
-insert into review (review_id, title, author, body, unique_id) values (21, 'eu massa donec dapibus', 'Diahann Huddy', 'Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo.', 5);
-insert into review (review_id, title, author, body, unique_id) values (22, 'augue quam sollicitudin vitae', 'Sile Neissen', 'Pellentesque ultrices mattis odio. Donec vitae nisi.', 5);
-insert into review (review_id, title, author, body, unique_id) values (23, 'nunc purus phasellus in', 'Lenard Heaps', 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum.', 5);
-insert into review (review_id, title, author, body, unique_id) values (24, 'pharetra magna ac consequat', 'Lois Spurdens', 'Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 5);
-insert into review (review_id, title, author, body, unique_id) values (25, 'ultrices libero non mattis pulvinar', 'Elmer Itzkovwich', 'Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 8);
-insert into review (review_id, title, author, body, unique_id) values (26, 'interdum venenatis turpis', 'Lotti Wratten', 'Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus. Curabitur at ipsum ac tellus semper interdum.', 8);
-insert into review (review_id, title, author, body, unique_id) values (27, 'est donec odio justo sollicitudin', 'Beitris O''Henecan', 'Vivamus tortor. Duis mattis egestas metus. Aenean fermentum.', 8);
-insert into review (review_id, title, author, body, unique_id) values (28, 'pharetra magna ac consequat', 'Rey Keegan', 'Etiam justo. Etiam pretium iaculis justo.', 9);
-insert into review (review_id, title, author, body, unique_id) values (29, 'odio porttitor id consequat in', 'Quint Rigeby', 'Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero.', 9);
-insert into review (review_id, title, author, body, unique_id) values (30, 'ante ipsum primis', 'Junina Paulmann', 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.', 9);
-insert into review (review_id, title, author, body, unique_id) values (31, 'vel nisl duis ac', 'Faythe Cullip', 'Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim.', 10);
-insert into review (review_id, title, author, body, unique_id) values (32, 'tempus vel pede morbi porttitor', 'Agneta Swait', 'Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh.', 10);
-insert into review (review_id, title, author, body, unique_id) values (33, 'vel est donec', 'Kaja Legges', 'Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus.', 10);
+insert into review (user_id, title, body, unique_id) values (1, 'sed magna at', 'Melita Heintzsch', 'Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.', 1);
+insert into review (user_id, title, body, unique_id) values (2, 'ut erat curabitur', 'Latrena Byrth', 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim.', 1); insert into review (user_id, title, author, body, unique_id) values (3, 'vel enim sit amet', 'Harley Siddon', 'Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum.', 1);
+insert into review (user_id, title, body, unique_id) values (4, 'volutpat erat quisque erat', 'Viviyan Erricker', 'Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.', 1);
+insert into review (user_id, title, body, unique_id) values (5, 'leo odio condimentum', 'Olly Bellay', 'Etiam justo. Etiam pretium iaculis justo. In hac habitasse platea dictumst. Etiam faucibus cursus urna.', 2);
+insert into review (user_id, title, body, unique_id) values (6, 'ridiculus mus vivamus vestibulum', 'Shermy Menary', 'Nulla facilisi. Cras non velit nec nisi vulputate nonummy. Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat.', 2);
+insert into review (user_id, title, body, unique_id) values (7, 'dui maecenas tristique est et', 'Levi Bimrose', 'Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est. Phasellus sit amet erat.', 2);
+insert into review (user_id, title, body, unique_id) values (8, 'odio elementum eu', 'Ronald Bernini', 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est.', 2);
+insert into review (user_id, title, body, unique_id) values (9, 'iaculis congue vivamus metus arcu', 'Donni Kleinstein', 'Curabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.', 3);
+insert into review (user_id, title, body, unique_id) values (10, 'habitasse platea dictumst', 'Rodger Cottingham', 'Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus.', 3);
+insert into review (user_id, title, body, unique_id) values (11, 'in hac habitasse platea dictumst', 'Flss Beatens', 'Praesent blandit. Nam nulla.', 4);
+insert into review (user_id, title, body, unique_id) values (12, 'diam vitae quam suspendisse potenti', 'Myles Iliffe', 'Donec posuere metus vitae ipsum. Aliquam non mauris.', 4);
+insert into review (user_id, title, body, unique_id) values (13, 'nibh in quis justo maecenas', 'Jakie Pallister', 'Quisque id justo sit amet sapien dignissim vestibulum. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nulla dapibus dolor vel est.', 4);
+insert into review (user_id, title, body, unique_id) values (14, 'orci eget orci vehicula', 'Gal Balshaw', 'Duis aliquam convallis nunc. Proin at turpis a pede posuere nonummy. Integer non velit. Donec diam neque, vestibulum eget, vulputate ut, ultrices vel, augue.', 4);
+insert into review (user_id, title, body, unique_id) values (15, 'odio odio elementum eu', 'Retha Rumney', 'Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl. Aenean lectus. Pellentesque eget nunc.', 4);
+insert into review (user_id, title, body, unique_id) values (16, 'sed vel enim', 'Marys Lantaff', 'Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.', 4);
+insert into review (user_id, title, body, unique_id) values (17, 'fermentum donec ut', 'Perri Darch', 'Suspendisse accumsan tortor quis turpis. Sed ante. Vivamus tortor. Duis mattis egestas metus.', 4);
+insert into review (user_id, title, body, unique_id) values (18, 'adipiscing molestie hendrerit at', 'Hedvig Brockhurst', 'Donec posuere metus vitae ipsum. Aliquam non mauris.', 4);
+insert into review (user_id, title, body, unique_id) values (19, 'phasellus sit amet erat nulla', 'Agosto Alfonsetti', 'Maecenas tincidunt lacus at velit. Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat.', 4);
+insert into review (user_id, title, body, unique_id) values (20, 'nam tristique tortor eu', 'Melania Tudbald', 'Aenean fermentum. Donec ut mauris eget massa tempor convallis.', 4);
+insert into review (user_id, title, body, unique_id) values (21, 'eu massa donec dapibus', 'Diahann Huddy', 'Aliquam erat volutpat. In congue. Etiam justo. Etiam pretium iaculis justo.', 5);
+insert into review (user_id, title, body, unique_id) values (22, 'augue quam sollicitudin vitae', 'Sile Neissen', 'Pellentesque ultrices mattis odio. Donec vitae nisi.', 5);
+insert into review (user_id, title, body, unique_id) values (23, 'nunc purus phasellus in', 'Lenard Heaps', 'Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec pharetra, magna vestibulum aliquet ultrices, erat tortor sollicitudin mi, sit amet lobortis sapien sapien non mi. Integer ac neque. Duis bibendum. Morbi non quam nec dui luctus rutrum.', 5);
+insert into review (user_id, title, body, unique_id) values (24, 'pharetra magna ac consequat', 'Lois Spurdens', 'Duis mattis egestas metus. Aenean fermentum. Donec ut mauris eget massa tempor convallis. Nulla neque libero, convallis eget, eleifend luctus, ultricies eu, nibh.', 5);
+insert into review (user_id, title, body, unique_id) values (25, 'ultrices libero non mattis pulvinar', 'Elmer Itzkovwich', 'Aenean sit amet justo. Morbi ut odio. Cras mi pede, malesuada in, imperdiet et, commodo vulputate, justo. In blandit ultrices enim. Lorem ipsum dolor sit amet, consectetuer adipiscing elit.', 8);
+insert into review (user_id, title, body, unique_id) values (26, 'interdum venenatis turpis', 'Lotti Wratten', 'Nam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus. Curabitur at ipsum ac tellus semper interdum.', 8);
+insert into review (user_id, title, body, unique_id) values (27, 'est donec odio justo sollicitudin', 'Beitris O''Henecan', 'Vivamus tortor. Duis mattis egestas metus. Aenean fermentum.', 8);
+insert into review (user_id, title, body, unique_id) values (28, 'pharetra magna ac consequat', 'Rey Keegan', 'Etiam justo. Etiam pretium iaculis justo.', 9);
+insert into review (user_id, title, body, unique_id) values (29, 'odio porttitor id consequat in', 'Quint Rigeby', 'Integer aliquet, massa id lobortis convallis, tortor risus dapibus augue, vel accumsan tellus nisi eu orci. Mauris lacinia sapien quis libero.', 9);
+insert into review (user_id, title, body, unique_id) values (30, 'ante ipsum primis', 'Junina Paulmann', 'Praesent id massa id nisl venenatis lacinia. Aenean sit amet justo. Morbi ut odio.', 9);
+insert into review (user_id, title, body, unique_id) values (31, 'vel nisl duis ac', 'Faythe Cullip', 'Nulla tempus. Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Nulla ac enim.', 10);
+insert into review (user_id, title, body, unique_id) values (32, 'tempus vel pede morbi porttitor', 'Agneta Swait', 'Duis bibendum. Morbi non quam nec dui luctus rutrum. Nulla tellus. In sagittis dui vel nisl. Duis ac nibh.', 10);
+insert into review (user_id, title, body, unique_id) values (33, 'vel est donec', 'Kaja Legges', 'Vivamus vel nulla eget eros elementum pellentesque. Quisque porta volutpat erat. Quisque erat eros, viverra eget, congue eget, semper rutrum, nulla. Nunc purus.', 10);
  
 insert into unique_books (unique_id, name, author, rating, review_count, recommendation_count, book_count) values (1, 'Warlock', 'Noelani Petel', 3.4, 4, 5, 1);
 insert into unique_books (unique_id, name, author, rating, review_count, recommendation_count, book_count) values (2, 'April''s Shower', 'Elise Burch', 1.6, 4, 4, 1);
