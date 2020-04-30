@@ -4,7 +4,9 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
+	<h3>Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</h3>
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/ubook_page.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/background.css') }}">
 </head>
 <body>
 	<h1>{{ unique_book['name'] }}</h1>
@@ -15,7 +17,17 @@
 		<br>
 	{% endif %}
 
-	<p><b>Average Rating:</b> {{ unique_book['rating'] }}</p>
+	{% if unique_book['recommendation_count'] == 1 %}
+		<p><b>Recommended By:</b> {{ unique_book['recommendation_count'] }} professor</p>
+	{% else%}
+		<p><b>Recommended By:</b> {{ unique_book['recommendation_count'] }} professors</p>
+	{% endif %}
+	
+	{% if unique_book['review_count'] == 1 %}
+		<p><b>Average Rating:</b> {{ unique_book['rating'] }} ({{ unique_book['review_count'] }} user)</p>
+	{% else%}
+		<p><b>Average Rating:</b> {{ unique_book['rating'] }} ({{ unique_book['review_count'] }} users)</p>
+	{% endif %}
 
 	<b>Genres:</b>
 	{% for genre in unique_book['genres'] %}
@@ -23,6 +35,14 @@
 	{% endfor %}
 
 	<br><br>
+
+	<div class="filter">
+		<b>Filter ads by:</b>
+		<a href="{{ url_for('ubook_page', unique_id = unique_book['unique_id'], ttype = 1) }}">exchange</a>
+		<a href="{{ url_for('ubook_page', unique_id = unique_book['unique_id'], ttype = 2) }}">borrowing</a>
+		<a href="{{ url_for('ubook_page', unique_id = unique_book['unique_id'], ttype = 3) }}">buying</a>
+		<a href="{{ url_for('ubook_page', unique_id = unique_book['unique_id'], ttype = None) }}">(remove filter)</a>
+	</div>
 
 	<button id="rate">Rate and Review</button>
 	<br><br>

@@ -5,10 +5,12 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
 	<h1>Search Results</h1>
+	<h3>Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</h3>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/background.css') }}">
 </head>
 <body>
 	{% for result in search_results %}
-		<a href="{{ url_for('ubook_page', unique_id = result['unique_id']) }}">{{ result['name']}} by {{ result['author'] }}</a>
+		<p><a href="{{ url_for('ubook_page', unique_id = result['unique_id']) }}">{{ result['name']}} by {{ result['author'] }}</a></p>
 	{% endfor %}
 </body>
 </html>

@@ -3,6 +3,13 @@ from flask_mysqldb import MySQL
 from difflib import SequenceMatcher
 import config
 
+import io
+import random
+from flask import Response
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+from figure import create_figure
+
 app = Flask(__name__)
 
 app.secret_key = '9afd69d3d6ff1bdd87f0deb0'
@@ -122,7 +129,7 @@ def home(name, user_id):
 	cur.execute(cmd)
 	user_type_recommendations = cur.fetchall()
 
-	return render_template('home.html', name = name, user_id = user_id, trending_genres = trending_genres, recommendations = recommendations, user_type_recommendations = user_type_recommendations)
+	return render_template('home.html', name = name, user_id = user_id, available_genres = available_genres, trending_genres = trending_genres, recommendations = recommendations, user_type_recommendations = user_type_recommendations)
 
 @app.route('/search', methods = ['GET'])
 def search():
@@ -172,7 +179,8 @@ def search():
 	return render_template('search.html', search_results = search_results)
 
 @app.route('/book/<unique_id>')
-def ubook_page(unique_id):
+@app.route('/book/<unique_id>/<ttype>')
+def ubook_page(unique_id, ttype = None):
 	cur = mysql.connection.cursor()
 
 	# get unique_book details
@@ -181,11 +189,18 @@ def ubook_page(unique_id):
 	cur.execute(cmd)
 	unique_book = cur.fetchone()
 
-	# get all_book details
+	if ttype is None:
+		# get all_book details
 
-	cmd = f"SELECT * FROM all_books WHERE unique_id = {unique_id}"
-	cur.execute(cmd)
-	all_books = cur.fetchall()
+		cmd = f"SELECT * FROM all_books WHERE unique_id = {unique_id}"
+		cur.execute(cmd)
+		all_books = cur.fetchall()
+
+	else:
+
+		cmd = f"SELECT * FROM all_books WHERE unique_id = {unique_id} AND transaction_type = {ttype}"
+		cur.execute(cmd)
+		all_books = cur.fetchall()
 
 	# get genre details
 
@@ -251,38 +266,36 @@ def review():
 	unique_id = request.form['unique_id']
 
 	try:
-		cur.execute("SELECT MAX(review_id) FROM review")
-		maxid = cur.fetchone()
-		rid = maxid['MAX(review_id)'] + 1
+		cmd = f"INSERT INTO review VALUES ('{title}', {user_id}, '{body}', {unique_id})"
+		print(cmd)
+		cur.execute(cmd)
 
+		cur.execute(f"SELECT review_count FROM unique_books WHERE unique_id = {unique_id}")
+		review_count = cur.fetchone()
+		print(review_count)
+		review_count = review_count['review_count']
+
+		cur.execute(f"SELECT rating FROM unique_books WHERE unique_id = {unique_id}")
+		curr_rating = cur.fetchone()
+		curr_rating = curr_rating['rating']
+
+		# calculate new rating
+
+		new_rating = (curr_rating * review_count + int(rating)) / (review_count + 1)
+
+		# update unique_books
+
+		cmd = f"UPDATE unique_books SET rating = {new_rating}, review_count = {review_count + 1}"
+		cur.execute(cmd)
+
+		msg = 'Review added successfully!'
+	
 	except:
-		rid = 1
-
-	cmd = f"INSERT INTO review VALUES ({rid}, '{title}', {user_id}, '{body}', {unique_id})"
-	print(cmd)
-	cur.execute(cmd)
-
-	cur.execute(f"SELECT review_count FROM unique_books WHERE unique_id = {unique_id}")
-	review_count = cur.fetchone()
-	print(review_count)
-	review_count = review_count['review_count']
-
-	cur.execute(f"SELECT rating FROM unique_books WHERE unique_id = {unique_id}")
-	curr_rating = cur.fetchone()
-	curr_rating = curr_rating['rating']
-
-	# calculate new rating
-
-	new_rating = (curr_rating * review_count + int(rating)) / (review_count + 1)
-
-	# update unique_books
-
-	cmd = f"UPDATE unique_books SET rating = {new_rating}, review_count = {review_count + 1}"
-	cur.execute(cmd)
+		msg = 'You have already added a review.'
 
 	mysql.connection.commit()
 
-	return redirect(url_for('success_page', msg = 'Review added successfully!'))
+	return redirect(url_for('success_page', msg = msg))
 
 @app.route('/preferences')
 @app.route('/preferences/<todo>/<genre>')
@@ -358,7 +371,7 @@ def add_book():
 		transaction_type = request.form['transaction_type']
 
 		session['book_to_add'] = request.form
-		print(request.form)
+		print("Book to add form: ", request.form)
 
 		cur = mysql.connection.cursor()
 		cmd = f"SELECT * FROM unique_books"
@@ -430,6 +443,7 @@ def add_book2(transaction_type):
 		if transaction_type == '1':
 			# cur.execute("SELECT MAX(book_id) FROM available_for_exchange")
 			# maxid = cur.fetchone()
+			print('session', session)
 			cmd = f"INSERT INTO available_for_exchange VALUES ({max_bid}, '{session['book_to_add']['exchange-description']}')"
 			print(cmd)
 			cur.execute(cmd)
@@ -510,7 +524,7 @@ def my_books():
 	cmd = f"SELECT * FROM all_books WHERE user_id = {session['id']}"
 	cur.execute(cmd)
 	books = cur.fetchall()
-	print(books)
+	print("mybooks", books)
 
 	session['mybooks'] = {}
 
@@ -651,6 +665,27 @@ def delete_book(book_id):
 @app.route('/success/<msg>')
 def success_page(msg):
 	return render_template('success-page.html', msg = msg)
+
+
+
+@app.route('/analytics')
+def analytics():
+	pass
+
+@app.route('/plot.png')
+def plot_png():
+	cur = mysql.connection.cursor()
+	cmd = f'''select temp.genre_name, temp.transaction_type, count(*) as Total_Books from(select genre_name, transaction_type from archive s, book_genre_relation t where s.unique_id = t.unique_id) as temp group by temp.genre_name, temp.transaction_type with rollup;'''
+	cur.execute(cmd)
+	res = cur.fetchall()
+	print(res)
+
+	fig = create_figure(res)
+	output = io.BytesIO()
+	FigureCanvas(fig).print_png(output)
+	return Response(output.getvalue(), mimetype='image/png')
+
+
 
 @app.route('/logout')
 def logout():

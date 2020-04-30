@@ -6,6 +6,7 @@
 	<title>Document</title>
 	<h1>My Books</h1>
 	<h3>Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</h3>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/background.css') }}">
 </head>
 <body>
 {% for book in books %}

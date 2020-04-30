@@ -5,7 +5,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
 	<h1>Add a book</h1>
-	<h3>{{msg}}</h3>
+	<h3>Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</h3>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/background.css') }}">
 </head>
 <body>
 	<form action="/addbook" method="POST">
@@ -39,14 +40,11 @@
 			<label for="3">Sell</label><br>
 			<br>
 			<br>
-			<div class="price">
 
-			</div>
-			<div class="num-of-days">
-
-			</div>
-			<div class="exchange-description">
-			</div>
+			<div class="exchange-description"></div>
+			<div class="price"></div>
+			<div class="num-of-days"></div>
+			
 			<br>
 			<button type="submit">Proceed</button>
 		  </div>
