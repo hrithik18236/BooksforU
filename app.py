@@ -306,7 +306,7 @@ def review():
 def preferences(todo = None, genre = None):
 	if 'loggedin' not in session:
 		return redirect(url_for('login'))
-		
+
 	cur = mysql.connection.cursor()
 
 	if todo is None:
@@ -707,7 +707,7 @@ def plot_png():
 		FigureCanvas(fig).print_png(output)
 		return Response(output.getvalue(), mimetype='image/png')
 	except:
-		return redirect(url_for('sucess_page', msg = "Not enough data."))
+		return redirect(url_for('success_page', msg = "Not enough data."))
 
 
 
