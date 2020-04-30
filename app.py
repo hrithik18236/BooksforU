@@ -181,6 +181,9 @@ def search():
 @app.route('/book/<unique_id>')
 @app.route('/book/<unique_id>/<ttype>')
 def ubook_page(unique_id, ttype = None):
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
+
 	cur = mysql.connection.cursor()
 
 	# get unique_book details
@@ -301,6 +304,9 @@ def review():
 @app.route('/preferences')
 @app.route('/preferences/<todo>/<genre>')
 def preferences(todo = None, genre = None):
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
+		
 	cur = mysql.connection.cursor()
 
 	if todo is None:
@@ -394,6 +400,9 @@ def add_book():
 # @app.route('/addbook2')
 @app.route('/addbook2/<transaction_type>', methods = ['GET', 'POST'])
 def add_book2(transaction_type):
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
+
 	cur = mysql.connection.cursor()
 
 	if request.method == 'POST':
@@ -567,6 +576,8 @@ def my_books():
 
 @app.route('/mybooks/editbook/<book_id>', methods = ['GET','POST'])
 def edit_book(book_id):
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
 	if request.method == 'POST':
 		cur = mysql.connection.cursor()
 
@@ -605,6 +616,9 @@ def edit_book(book_id):
 
 @app.route('/mybooks/deletebook/<book_id>', methods = ['POST'])
 def delete_book(book_id):
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
+
 	cur = mysql.connection.cursor()
 
 	# get unique_id from all_books
@@ -665,6 +679,9 @@ def delete_book(book_id):
 
 @app.route('/success/<msg>')
 def success_page(msg):
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
+
 	return render_template('success-page.html', msg = msg)
 
 
@@ -675,6 +692,9 @@ def analytics():
 
 @app.route('/plot.png')
 def plot_png():
+	if 'loggedin' not in session:
+		return redirect(url_for('login'))
+
 	try:
 		cur = mysql.connection.cursor()
 		cmd = f'''select temp.genre_name, temp.transaction_type, count(*) as Total_Books from(select genre_name, transaction_type from archive s, book_genre_relation t where s.unique_id = t.unique_id) as temp group by temp.genre_name, temp.transaction_type with rollup;'''
