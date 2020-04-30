@@ -7,6 +7,39 @@
 	<h1>Login Page</h1>
 	<h3>{{msg}}</h3>
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/background.css') }}">
+	<style>
+		a:link, a:visited {
+		  background-color: #f44336;
+		  color: white;
+		  padding: 10px 20px;
+		  border-radius: 12px;
+		  text-align: center;
+		  text-decoration: none;
+		  display: inline-block;
+		  border: 2px solid black;
+		}
+
+		a:hover, a:active {
+		  background-color: red;
+		}
+	.button {
+	  background-color: red;
+	  border: 2px solid black;
+	  border-radius: 12px;
+	  color: white;
+	  padding: 3px 12px;
+	  text-align: center;
+	  text-decoration-color: yellow;
+	  font-size: 10px;
+	  margin: 3px 1px;
+	  opacity: 0.6;
+	  transition: 0.3s;
+	  display: inline-block;
+	  text-decoration: none;
+	  cursor: pointer;
+	}
+	.button:hover {opacity: 1}
+	</style>
 </head>
 <body>
 	<form action="/checkuser" method="POST">
