@@ -7,9 +7,61 @@
 	<h1>My Books</h1>
 	<h3>Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</h3>
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/background.css') }}">
+	<style>
+		a:link, a:visited {
+		  background-color: #f9e4b7;
+		  color: white;
+		  padding: 10px 20px;
+		  border-radius: 12px;
+		  text-align: center;
+		  text-decoration: none;
+		  display: inline-block;
+		  border: 2px solid black;
+		  color: black;
+		}
+
+		a:hover, a:active {
+		  background-color: #cfb997;
+		}
+		.delbtn {
+	  background-color: red;
+	  border: 2px solid black;
+	  border-radius: 12px;
+	  color: white;
+	  padding: 3px 12px;
+	  text-align: center;
+	  text-decoration-color: yellow;
+	  font-size: 10px;
+	  margin: 3px 1px;
+	  opacity: 0.6;
+	  transition: 0.3s;
+	  display: inline-block;
+	  text-decoration: none;
+	  cursor: pointer;
+	}
+	.delbtn:hover {opacity: 1}
+	.editbtn {
+	  background-color: red;
+	  border: 2px solid black;
+	  border-radius: 12px;
+	  color: white;
+	  padding: 3px 12px;
+	  text-align: center;
+	  text-decoration-color: yellow;
+	  font-size: 10px;
+	  margin: 3px 1px;
+	  opacity: 0.6;
+	  transition: 0.3s;
+	  display: inline-block;
+	  text-decoration: none;
+	  cursor: pointer;
+	}
+	.editbtn:hover {opacity: 1}
+	</style>
 </head>
 <body>
 {% for book in books %}
+	<div class="container">
 	<p class="bookname  {{ book['book_id'] }}"><b>Name:</b> {{ book['name'] }}</p>
 	<p class = "author {{ book['book_id'] }}"><b>Author:</b> {{ book['author'] }}</p>
 	<p class = "description {{ book['book_id'] }}"><b>Description:</b> {{ book['description'] }}</p>
@@ -33,6 +85,7 @@
 	<form style="display: inline;" action="{{ url_for('delete_book', book_id = book['book_id']) }}", method="POST">
 		<button class="delbtn {{ book['book_id'] }}">Delete</button>
 	</form>
+	</div>
 	<br>
 	<br>
 {% endfor %}
