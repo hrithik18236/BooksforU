@@ -7,6 +7,23 @@
 	<h1>Preferences</h1>
 	<h3>Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</h3>
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/background.css') }}">
+	<style>
+		a:link, a:visited {
+		  background-color: #f9e4b7;
+		  color: white;
+		  padding: 10px 20px;
+		  border-radius: 12px;
+		  text-align: center;
+		  text-decoration: none;
+		  display: inline-block;
+		  border: 2px solid black;
+		  color: black;
+		}
+
+		a:hover, a:active {
+		  background-color: #cfb997;
+		}
+	</style>
 </head>
 <body>
 	<div style="margin-bottom: 5pc;">
