@@ -290,7 +290,8 @@ def review():
 
 		msg = 'Review added successfully!'
 	
-	except:
+	except Exception as e:
+		print(e)
 		msg = 'You have already added a review.'
 
 	mysql.connection.commit()
