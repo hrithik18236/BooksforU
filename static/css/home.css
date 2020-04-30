@@ -8,9 +8,10 @@ body {
 	background-color: #cccccc;
    }
 
-.links, h1 {
+.links, h1, h2 {
 	background-color: beige;
 	width: fit-content;
+	padding: 5px;
 }
 
 .container {

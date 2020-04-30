@@ -674,16 +674,19 @@ def analytics():
 
 @app.route('/plot.png')
 def plot_png():
-	cur = mysql.connection.cursor()
-	cmd = f'''select temp.genre_name, temp.transaction_type, count(*) as Total_Books from(select genre_name, transaction_type from archive s, book_genre_relation t where s.unique_id = t.unique_id) as temp group by temp.genre_name, temp.transaction_type with rollup;'''
-	cur.execute(cmd)
-	res = cur.fetchall()
-	print(res)
+	try:
+		cur = mysql.connection.cursor()
+		cmd = f'''select temp.genre_name, temp.transaction_type, count(*) as Total_Books from(select genre_name, transaction_type from archive s, book_genre_relation t where s.unique_id = t.unique_id) as temp group by temp.genre_name, temp.transaction_type with rollup;'''
+		cur.execute(cmd)
+		res = cur.fetchall()
+		print(res)
 
-	fig = create_figure(res)
-	output = io.BytesIO()
-	FigureCanvas(fig).print_png(output)
-	return Response(output.getvalue(), mimetype='image/png')
+		fig = create_figure(res)
+		output = io.BytesIO()
+		FigureCanvas(fig).print_png(output)
+		return Response(output.getvalue(), mimetype='image/png')
+	except:
+		return redirect(url_for('sucess_page', msg = "Not enough data."))
 
 
 
