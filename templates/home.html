@@ -72,6 +72,7 @@
 				<h3>Books Curated For You</h3>
 				{% for recommendation in recommendations %}
 					<a href="{{ url_for('search', name = recommendation['name']) }}">{{ recommendation['name'] }}</a>
+					<br>
 				{% endfor %}
 			</div>
 
@@ -79,6 +80,7 @@
 				<h3>Most Preferred Genres</h3>
 				{% for genre in trending_genres %}
 					<a href="{{ url_for('search', genre = genre['genre_name']) }}">{{ genre['genre_name'] }}</a>
+					<br>
 				{% endfor %}
 			</div>
 		
@@ -86,6 +88,7 @@
 				<h3>Genres Preferred By Similar Users</h3>
 				{% for recommendation in user_type_recommendations %}
 					<a href="{{ url_for('search', genre = recommendation['genre_name']) }}">{{ recommendation['genre_name'] }}</a>
+					<br>
 				{% endfor %}
 			</div>
 		</div>	
