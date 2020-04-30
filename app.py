@@ -121,8 +121,11 @@ def home(name, user_id):
 	
 	cur.execute(cmd)
 	user_type_recommendations = cur.fetchall()
-
-	return render_template('home.html', name = name, user_id = user_id, trending_genres = trending_genres, recommendations = recommendations, user_type_recommendations = user_type_recommendations)
+	cmd = f"SELECT * from genre"
+	cur.execute(cmd)
+	available_genres = list(cur.fetchall())
+	
+	return render_template('home.html', name = name, user_id = user_id, trending_genres = trending_genres, recommendations = recommendations, user_type_recommendations = user_type_recommendations, available_genres=available_genres)
 
 @app.route('/search', methods = ['GET'])
 def search():
