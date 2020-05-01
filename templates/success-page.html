@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/background.css') }}">
 </head>
 <body>
 	<p>{{ msg }} Go back to <a href="{{ url_for('home', name = session['name'], user_id = session['id']) }}">Home</a>.</p>

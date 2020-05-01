@@ -684,8 +684,6 @@ def success_page(msg):
 
 	return render_template('success-page.html', msg = msg)
 
-
-
 @app.route('/analytics')
 def analytics():
 	pass
@@ -706,10 +704,9 @@ def plot_png():
 		output = io.BytesIO()
 		FigureCanvas(fig).print_png(output)
 		return Response(output.getvalue(), mimetype='image/png')
+
 	except:
 		return redirect(url_for('success_page', msg = "Not enough data."))
-
-
 
 @app.route('/logout')
 def logout():
