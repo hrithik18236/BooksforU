@@ -1,5 +1,0 @@
-MYSQL_HOST = 'localhost'
-MYSQL_USER = 'root'
-MYSQL_PASSWORD = 'dbmsproject'
-MYSQL_DB = 'database4'
-MMYSQL_CURSORCLASS = 'DictCursor'
